@@ -23,18 +23,16 @@ try{
   await page.goto(process.env.QA_URL||'http://127.0.0.1:4174/');
   const frame=page.frames().find(f=>f.parentFrame());await frame.waitForSelector('.am-dots[data-drawn="1127"]');
   const phone=frame.locator('.am-phone'),light=frame.locator('.am-earth-light'),sky=frame.locator('.am-sky');
-  assert.equal(await phone.getAttribute('data-solar-mode'),'now');
   assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-noon)<1000);
   assert.equal(await phone.getAttribute('data-phase'),'Daylight');
   assert.ok(Number(await phone.getAttribute('data-sun-elevation'))>45);
-  assert.equal(await frame.locator('[data-now]').isVisible(),false);
+  assert.equal(await frame.locator('[data-replay],[data-now]').count(),0);
   assert.equal(await phone.locator('[data-study-note]').textContent(),'Earth now · recorded satellites');
   // Old persisted sunset values must not replace the clock.
   await frame.evaluate(()=>window.dispatchEvent(new CustomEvent('openai:set_globals',{detail:{globals:{widgetState:{privateContent:{aboveCinematic:[{selected:null,paused:false,story:false,solarTime:Date.parse('2026-10-04T09:00:00Z')}]}}}}})));
   assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-noon)<1000);
   await page.clock.fastForward(120000);
   assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-(noon+120000))<16000);
-  assert.equal(await phone.getAttribute('data-solar-mode'),'now');
   report.push({currentClock:true,stalePreviewIgnored:true,updatesWithReducedMotion:true});
 
   const alignment=await light.evaluate(async canvas=>{
@@ -64,18 +62,7 @@ try{
     await page.setViewportSize({width,height:1100});await page.clock.runFor(100);
     assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     await phone.screenshot({path:new URL(`now-${width}.png`,output).pathname});
-    for(const kind of ['sunrise','sunset']){
-      await frame.locator(`[data-replay=${kind}]`).click();
-      assert.equal(await phone.getAttribute('data-solar-mode'),'preview');
-      assert.ok((await phone.locator('[data-phase]').textContent()).startsWith('Preview · '));
-      assert.ok(Math.abs(Number(await phone.getAttribute('data-sun-elevation'))+.8333333333)<.0001);
-      const east=Number(await light.getAttribute('data-light-east'));assert.equal(east>0,kind==='sunrise');
-      await phone.screenshot({path:new URL(`${kind}-${width}.png`,output).pathname});
-      await frame.locator('[data-now]').click();
-      assert.equal(await phone.getAttribute('data-solar-mode'),'now');
-      assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-(noon+120000))<10000);
-    }
-    report.push({width,noOverflow:true,explicitPreviews:true,returnToNow:true});
+    report.push({width,noOverflow:true});
   }
   // Local-day rollover refreshes the event cache, independent of the snapshot date.
   const oldSunrise=Number(await phone.getAttribute('data-sunrise'));
@@ -90,17 +77,15 @@ try{
   assert.equal(await frame.locator('.am-trail').getAttribute('data-samples'),'121');await sky.press('Escape');
   await frame.evaluate(await readFile(process.env.AXE_PATH||'/private/tmp/above-axe/package/axe.min.js','utf8'));
   const violations=await frame.evaluate(async()=>{const r=await axe.run(document.getElementById('above-cinematic'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}));});assert.deepEqual(violations,[]);
-  await page.emulateMedia({reducedMotion:'no-preference'});await frame.locator('[data-replay=sunset]').click();
-  assert.equal(await frame.locator('[data-replay=sunset]').isDisabled(),true);
-  await page.clock.runFor(17000);assert.equal(await frame.locator('[data-replay=sunset]').isDisabled(),false);
-  assert.equal(await phone.getAttribute('data-solar-mode'),'preview');await frame.locator('[data-now]').click();
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await frame.waitForSelector('.am-pause:not(:disabled)');
   const first=Number(await frame.locator('.am-dots').getAttribute('data-frame'));await page.clock.runFor(400);
   assert.ok(Number(await frame.locator('.am-dots').getAttribute('data-frame'))>first+2);
   await phone.locator('.am-pause').click();const stopped=await frame.locator('.am-dots').getAttribute('data-frame');
   await page.clock.runFor(250);assert.equal(await frame.locator('.am-dots').getAttribute('data-frame'),stopped);
   const before=Number(await phone.getAttribute('data-solar-time'));await page.clock.fastForward(120000);
   assert.ok(Number(await phone.getAttribute('data-solar-time'))>before+60000);
-  report.push({pathSamples:121,axeViolations:0,replayCompletes:true,shimmerAndPauseWork:true,lightingUpdatesWhilePaused:true});
+  report.push({pathSamples:121,axeViolations:0,shimmerAndPauseWork:true,lightingUpdatesWhilePaused:true});
   assert.deepEqual(errors,[]);
   await writeFile(new URL('report.json',output),JSON.stringify({report,errors},null,2));console.log(JSON.stringify({report,errors},null,2));
 }finally{await browser.close();}

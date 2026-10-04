@@ -8,7 +8,7 @@
     {
       "projectionAlignment": {
         "samples": 1667,
-        "maxCosineError": 2.4424906541753444e-15,
+        "maxCosineError": 2.4702462297909733e-15,
         "dayPixels": 1377,
         "nightPixels": 80,
         "badPixels": 0
@@ -16,21 +16,15 @@
     },
     {
       "width": 320,
-      "noOverflow": true,
-      "explicitPreviews": true,
-      "returnToNow": true
+      "noOverflow": true
     },
     {
       "width": 390,
-      "noOverflow": true,
-      "explicitPreviews": true,
-      "returnToNow": true
+      "noOverflow": true
     },
     {
       "width": 736,
-      "noOverflow": true,
-      "explicitPreviews": true,
-      "returnToNow": true
+      "noOverflow": true
     },
     {
       "seoulDayRollover": true
@@ -38,7 +32,6 @@
     {
       "pathSamples": 121,
       "axeViolations": 0,
-      "replayCompletes": true,
       "shimmerAndPauseWork": true,
       "lightingUpdatesWhilePaused": true
     }
