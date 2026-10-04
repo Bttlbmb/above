@@ -10,8 +10,8 @@ try{
     await page.goto(process.env.QA_URL||'http://127.0.0.1:4174/');await page.waitForSelector('.am-dots[data-drawn="1127"]');
     await page.waitForFunction(()=>document.querySelector('[data-land-mask]').getAttribute('href')?.startsWith('blob:'));
     if(name==='phone')await page.locator('.am-phone').screenshot({path:new URL('orbital-dawn-phone-idle.png',output).pathname});
-    await page.locator('.am-cool').click();await page.waitForSelector('.am-trail[data-selected="49336"]');
-    if(name==='phone'){for(let i=0;i<3;i++)await page.locator('.am-cool').click();await page.waitForSelector('.am-trail[data-selected="67555"]');}
+    await page.locator('.am-cool').click();await page.waitForSelector('.am-trail[data-selected]');
+    if(name==='phone'){await page.locator('.am-cool').click();await page.waitForSelector('.am-trail[data-selected]');}
     const view=await page.evaluate(()=>{
       const phone=document.querySelector('.am-phone'),dots=document.querySelector('.am-dots'),light=document.querySelector('.am-earth-light'),style=getComputedStyle(phone);
       return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,objects:+dots.dataset.drawn,selected:+dots.dataset.selected,samples:+document.querySelector('.am-trail').dataset.samples,clock:+light.dataset.solarTime,sunDirection:[+light.dataset.lightEast,+light.dataset.lightNorth,+light.dataset.lightUp],palette:Object.fromEntries(['bg','text','muted','line','accent','dot','warm'].map(k=>[k,style.getPropertyValue('--am-'+k).trim()]))};

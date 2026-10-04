@@ -8,19 +8,28 @@ const maskCtx=mask.getContext('2d'),surface=lightCtx.createImageData(256,256),ma
 const motion=matchMedia('(prefers-reduced-motion: reduce)'),rad=Math.PI/180,ns='http://www.w3.org/2000/svg';
 const preferenceKey='above:living-earth:v1',pathCache=new Map(),colors=getComputedStyle(phone);
 const dotColor=colors.getPropertyValue('--am-dot').trim(),accent=colors.getPropertyValue('--am-accent').trim();
-const state={selected:null,paused:false,story:false,discovered:[]};
+const factsRevision='2024557ce0b4';
+const state={selected:null,paused:false,story:false,discovered:[],library:factsRevision,choice:null,seenStories:[],seenGroups:[]};
 let frame,objects=[],byId,ordered,discoveries,baseTime,observer,orbitRows,orbitalLibrary;
+let factLibrary=null,factTools=null,factsLoad=null,factsAttempt=0,interactionRevision=0;
 let orbitLoad=null,libraryLoad=null,libraryAttempt=0,skyLoad=null,ready=false,intersects=true,raf=null,lastFrame=0,width=0,dpr=0;
 let buckets=[],highlight=null,lastSolarMinute=null,maskUrl=null,maskRevision=0,saveTimer=null,lastSaved=null;
 const number=n=>Math.round(n).toLocaleString('en-US');
 const bearing=n=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(n/22.5)%16];
 const svgNode=(name,attrs={})=>{const node=document.createElementNS(ns,name);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;};
 
-async function json(url){const response=await fetch(url);if(!response.ok)throw new Error('Data unavailable');return response.json();}
+async function json(url){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+  try{const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error('Data unavailable');return await response.json();}
+  finally{clearTimeout(timer);}
+}
 function validState(value){
+  const sameLibrary=value?.library===factsRevision;
+  const indexes=(list,limit)=>Array.isArray(list)?[...new Set(list.filter(i=>Number.isInteger(i)&&i>=0&&i<10000))].slice(-limit):[];
   return {selected:byId.has(value?.selected)?value.selected:null,paused:value?.paused===true,
-    story:value?.story===true&&discoveries.has(value?.selected),
-    discovered:Array.isArray(value?.discovered)?[...new Set(value.discovered.filter(id=>discoveries.has(id)))].slice(-discoveries.size):[]};
+    story:value?.story===true,library:factsRevision,choice:sameLibrary&&Number.isInteger(value?.choice)?value.choice:null,
+    seenStories:sameLibrary?indexes(value?.seenStories,24):[],seenGroups:sameLibrary?indexes(value?.seenGroups,6):[],
+    discovered:Array.isArray(value?.discovered)?[...new Set(value.discovered.filter(id=>byId.has(id)))].slice(-64):[]};
 }
 function restore(){
   try{
@@ -85,15 +94,47 @@ function render(){
     $('.am-selected-label').textContent=object.name.split(' (')[0];labelPosition();
   }
   sky.setAttribute('aria-label',`${number(objects.length)} satellites above the horizon.${object?` Selected ${object.name}, ${Math.round(object.elevation)} degrees up, bearing ${bearing(object.azimuth)}.`:''} Use arrow keys to explore.`);
-  const fact=state.story?discoveries.get(state.selected):null;$('[data-story]').hidden=!fact;$('[data-story]').textContent=fact?.text||'';
+  renderFact();
   buildHighlight();drawDots(performance.now());drawTrail();schedule();
 }
-function select(id,story=false){state.selected=id;state.story=story;render();save();}
-function discover(){
+function renderFact(){
+  let fact;
+  if(factLibrary){const chosen=state.story?factLibrary.facts[state.choice]:null;fact=chosen?.ids.includes(state.selected)?chosen:(state.story?factTools.bestFact:factTools.detailFact)(factLibrary,state.selected);}
+  fact||=discoveries.get(state.selected);
+  $('[data-story]').hidden=!fact;$('[data-story]').textContent=fact?.text||'';$('[data-story]').dataset.key=fact?.key||'recorded-'+state.selected;$('[data-story]').dataset.story=fact?.story??'';
+  const citations=$('[data-sources]');citations.replaceChildren();citations.hidden=!fact;
+  const sources=fact?.sources||[fact?.source].filter(Boolean).map(url=>({url,title:url.includes('qzss')?'QZSS':url.includes('esa.int')?'ESA':url.includes('nasa.gov')?'NASA':'CelesTrak'}));
+  const publishers=new Set();
+  for(const source of sources||[]){const label=source.label||source.publisher||source.title,publisher=source.publisher||label;if(publishers.has(publisher))continue;publishers.add(publisher);const link=document.createElement('a');link.href=source.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;link.title=source.title;link.setAttribute('aria-label','Source: '+source.title);citations.append(link);}
+}
+async function loadFacts(){
+  if(factLibrary)return true;
+  if(!factsLoad){
+    const attempt=factsAttempt++,moduleUrl='./facts.b903b4a56ff8.mjs'+(attempt?`?retry=${attempt}`:'');
+    factsLoad=Promise.all([json('./assets/facts.2024557ce0b4.json'),import(moduleUrl)]).then(([data,tools])=>{
+      factTools=tools;factLibrary=tools.createLibrary(data,objects);phone.dataset.factCount=factLibrary.facts.length;phone.dataset.factObjects=factLibrary.bySatellite.size;
+      state.seenStories=state.seenStories.filter(i=>i<factLibrary.storyCount);state.seenGroups=state.seenGroups.filter(i=>i<factLibrary.groups.length);
+      if(!factLibrary.facts[state.choice]?.ids.includes(state.selected))state.choice=null;
+      $('[data-fact-status]').textContent='';renderFact();save();return true;
+    }).catch(()=>{factsLoad=null;$('[data-fact-status]').textContent='More satellite facts could not load. Recorded facts remain available.';return false;});
+  }
+  return factsLoad;
+}
+function select(id,story=false){interactionRevision++;state.selected=id;state.story=story;state.choice=null;render();save();if(id)loadFacts();}
+function discoverFallback(){
   const candidates=[...discoveries.values()].filter(fact=>fact.id!==state.selected);if(!candidates.length)return;
   let fact=candidates.find(f=>!state.discovered.includes(f.id));
   if(!fact){state.discovered=[];fact=candidates[0];}
-  state.discovered.push(fact.id);select(fact.id,true);
+  state.discovered.push(fact.id);state.selected=fact.id;state.story=true;state.choice=null;render();save();
+}
+async function discover(){
+  const revision=++interactionRevision,button=$('.am-cool');button.disabled=true;button.setAttribute('aria-busy','true');
+  try{
+    const loaded=await loadFacts();if(revision!==interactionRevision)return;
+    const choice=loaded?factTools.chooseFact(factLibrary,state):null;
+    if(choice){factTools.rememberFact(state,choice);state.selected=choice.object.id;state.story=true;state.choice=choice.fact.index;render();save();}
+    else discoverFallback();
+  }finally{button.disabled=false;button.removeAttribute('aria-busy');}
 }
 
 async function loadOrbits(){
@@ -190,7 +231,7 @@ async function loadSky(){
       delete frame.objects;delete frame.fields;ready=true;restore();
       $('[data-help]').id='am-help';sky.setAttribute('aria-describedby','am-help');
       $('.am-idle').textContent='Tap a satellite to explore.';$('.am-cool').disabled=discoveries.size<2;$('.am-cool').lastChild.textContent='Show me something cool';
-      sizeCanvas();updateSolar();render();
+      sizeCanvas();updateSolar();render();if(state.selected)loadFacts();
     }catch{
       ready=false;$('.am-idle').textContent='Sky unavailable. Please try again.';$('.am-cool').disabled=false;$('.am-cool').lastChild.textContent='Try again';
     }finally{skyLoad=null;}

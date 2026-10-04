@@ -3,13 +3,14 @@
     {
       "sameOriginAssetsOnly": true,
       "initialOrbitRequests": 0,
+      "initialFactRequests": 0,
       "currentClock": true,
       "updatesWithReducedMotion": true
     },
     {
       "projectionAlignment": {
         "samples": 1667,
-        "maxCosineError": 2.5951463200613034e-15,
+        "maxCosineError": 2.4980018054066022e-15,
         "dayPixels": 1377,
         "nightPixels": 80,
         "badPixels": 0
@@ -32,8 +33,12 @@
     },
     {
       "discoveryClicks": 12,
-      "distinctObjectsBeforeRepeat": 9,
-      "distinctFactsBeforeRepeat": 9,
+      "distinctObjectsBeforeRepeat": 12,
+      "distinctStoriesBeforeRepeat": 12,
+      "verifiedSatellites": 1115,
+      "prioritizesExceptional": true,
+      "contextExcludedFromDiscovery": true,
+      "sourceLinks": true,
       "noAdjacentRepeats": true,
       "restoredDiscoveryHistory": true,
       "pathSamples": 121,
@@ -58,6 +63,20 @@
     },
     {
       "blockedStorageWorks": true
+    },
+    {
+      "factLibraryFailureFallback": true,
+      "explicitFactLibraryRetry": true
+    },
+    {
+      "discoveryClicksStress": 80,
+      "noAdjacentRepeatsStress": true,
+      "preferenceCharacters": 569,
+      "boundedHistory": true
+    },
+    {
+      "contextFactOnTap": true,
+      "gcatAttribution": true
     }
   ],
   "errors": []

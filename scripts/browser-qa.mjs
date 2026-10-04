@@ -10,6 +10,7 @@ const executablePath=process.env.CHROMIUM_PATH||'/Users/maxnurnus/Library/Caches
 const output=new URL('../qa/',import.meta.url);await mkdir(output,{recursive:true});
 const packed=JSON.parse(await readFile(new URL('../source/data/sky.json',import.meta.url),'utf8'));
 const data={...packed,objects:packed.objects.map(row=>Object.fromEntries(packed.fields.map((key,i)=>[key,row[i]])))};
+const facts=JSON.parse(await readFile(new URL('../source/data/facts.json',import.meta.url),'utf8'));
 const d3Context={};vm.runInNewContext(await readFile(new URL('../../experiments/map-directions/assets/d3.min.js',import.meta.url),'utf8'),d3Context);
 const projection=d3Context.d3.geoOrthographic().rotate([-data.observer.longitude,-data.observer.latitude]).translate([128,128]).scale(96).clipAngle(90);
 const browser=await chromium.launch({headless:true,executablePath}),errors=[],report=[];
@@ -22,13 +23,13 @@ try{
   page.on('console',m=>{if(m.type()==='error'&&/Content Security Policy|Refused to/.test(m.text()))cspErrors.push(m.text());});
   const noon=Date.parse('2026-10-04T03:00:00Z');await page.clock.install({time:new Date(noon)});await page.goto(url);await ready(page);
   const phone=page.locator('.am-phone'),light=page.locator('.am-earth-light'),sky=page.locator('.am-sky');
-  assert.equal(requests.some(u=>/orbits\.|satellite\./.test(u)),false,'Orbit data and SGP4 should be lazy');
+  assert.equal(requests.some(u=>/orbits\.|satellite\.|facts\./.test(u)),false,'Facts, orbit data and SGP4 should be lazy');
   assert.equal(requests.filter(u=>/^https?:/.test(u)).every(u=>new URL(u).origin===new URL(url).origin),true);
   assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-noon)<1000);assert.equal(await phone.getAttribute('data-phase'),'Daylight');
   assert.ok(Number(await phone.getAttribute('data-sun-elevation'))>45);assert.equal(await page.locator('[data-replay],[data-now],iframe').count(),0);
   assert.equal(await phone.locator('[data-study-note]').textContent(),'Earth now · recorded satellites');
   await page.clock.fastForward(120000);assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-(noon+120000))<16000);
-  report.push({sameOriginAssetsOnly:true,initialOrbitRequests:0,currentClock:true,updatesWithReducedMotion:true});
+  report.push({sameOriginAssetsOnly:true,initialOrbitRequests:0,initialFactRequests:0,currentClock:true,updatesWithReducedMotion:true});
 
   await page.waitForFunction(()=>document.querySelector('[data-land-mask]').getAttribute('href')?.startsWith('blob:'));
   const time=Number(await light.getAttribute('data-solar-time')),sun=solarPosition(time,data.observer.latitude,data.observer.longitude),rad=Math.PI/180,reference=[];
@@ -53,21 +54,21 @@ try{
   const star=data.objects.find(o=>o.id===57774),w=await sky.evaluate(e=>e.clientWidth);
   await sky.click({position:{x:star.x*w/100,y:star.y*w/100}});await page.waitForSelector('.am-trail[data-selected="57774"]');
   const zero=await page.locator('.am-trail').evaluate(e=>({x:+e.dataset.zeroX,y:+e.dataset.zeroY}));assert.ok(Math.hypot(zero.x-star.x,zero.y-star.y)<.0001,'SGP4 path must agree with the unchanged snapshot');
-  assert.equal(await page.locator('.am-trail').getAttribute('data-samples'),'121');await sky.press('Escape');
+  assert.equal(await page.locator('.am-trail').getAttribute('data-samples'),'121');await page.waitForSelector('.am-phone[data-fact-objects="1115"]');assert.equal(Number(await phone.getAttribute('data-fact-count')),facts.counts.facts);assert.equal(await phone.locator('[data-story]').getAttribute('data-key'),'gcat-physical-57774');assert.ok(await phone.locator('[data-sources] a').count()>0);await sky.press('Escape');
   const discoveries=[];
   for(let i=0;i<12;i++){
     await phone.locator('.am-cool').click();const id=Number(await page.locator('.am-dots').getAttribute('data-selected')),story=await phone.locator('[data-story]').textContent();
     assert.ok(data.objects.some(o=>o.id===id&&o.elevation>=0));assert.ok(story.length>30);assert.doesNotMatch(story,/NaN|undefined/);if(i)assert.notEqual(id,discoveries[i-1].id);
-    await page.waitForSelector(`.am-trail[data-selected="${id}"]`);assert.equal(await page.locator('.am-trail').getAttribute('data-samples'),'121');discoveries.push({id,story});
+    await page.waitForSelector(`.am-trail[data-selected="${id}"]`);assert.equal(await page.locator('.am-trail').getAttribute('data-samples'),'121');const storyId=await phone.locator('[data-story]').getAttribute('data-story');const factKey=await phone.locator('[data-story]').getAttribute('data-key');const record=facts.facts.find(row=>row[0]===factKey);assert.ok(record&&record[1].includes(id)&&record[3]>0);assert.ok(await phone.locator('[data-sources] a').count()>0);discoveries.push({id,story,storyId,factKey,tier:record[3]});
   }
-  assert.equal(new Set(discoveries.slice(0,9).map(f=>f.id)).size,9);assert.equal(new Set(discoveries.slice(0,9).map(f=>f.story)).size,9);
-  assert.equal(requests.filter(u=>/\/orbits\./.test(u)).length,1);assert.equal(requests.filter(u=>/\/satellite\./.test(u)).length,1);
+  assert.equal(new Set(discoveries.map(f=>f.id)).size,12);assert.equal(new Set(discoveries.map(f=>f.storyId)).size,12);
+  assert.equal(requests.filter(u=>/\/orbits\./.test(u)).length,1);assert.equal(requests.filter(u=>/\/satellite\./.test(u)).length,1);assert.equal(requests.filter(u=>/\/facts\..*\.json/.test(u)).length,1);assert.ok(discoveries[0].tier===2&&discoveries[1].tier===2);
   await page.clock.runFor(200);const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
-  await page.reload();await ready(page);assert.equal(Number(await page.locator('.am-dots').getAttribute('data-selected')),saved.selected);
+  await page.reload();await ready(page);await page.waitForSelector('.am-phone[data-fact-objects="1115"]');assert.equal(Number(await page.locator('.am-dots').getAttribute('data-selected')),saved.selected);assert.equal(Number(await phone.locator('[data-story]').getAttribute('data-story')),facts.facts[saved.choice][7]);
   await phone.locator('.am-cool').click();assert.notEqual(Number(await page.locator('.am-dots').getAttribute('data-selected')),saved.selected);
   await page.setViewportSize({width:320,height:1100});await page.clock.runFor(100);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await phone.screenshot({path:new URL('discovery-320.png',output).pathname});await page.setViewportSize({width:390,height:1100});await page.clock.runFor(100);
-  report.push({discoveryClicks:12,distinctObjectsBeforeRepeat:9,distinctFactsBeforeRepeat:9,noAdjacentRepeats:true,restoredDiscoveryHistory:true,pathSamples:121,sgp4Alignment:true,oneLazyOrbitDownload:true});
+  report.push({discoveryClicks:12,distinctObjectsBeforeRepeat:12,distinctStoriesBeforeRepeat:12,verifiedSatellites:facts.counts.distinctSatellites,prioritizesExceptional:true,contextExcludedFromDiscovery:true,sourceLinks:true,noAdjacentRepeats:true,restoredDiscoveryHistory:true,pathSamples:121,sgp4Alignment:true,oneLazyOrbitDownload:true});
   await page.evaluate(await readFile(process.env.AXE_PATH||'/private/tmp/above-axe/package/axe.min.js','utf8'));
   const violations=await page.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}));});assert.deepEqual(violations,[]);assert.deepEqual(cspErrors,[]);
   await page.emulateMedia({reducedMotion:'no-preference'});await page.waitForSelector('.am-pause:not(:disabled)');const first=Number(await page.locator('.am-dots').getAttribute('data-frame'));await page.clock.runFor(400);assert.ok(Number(await page.locator('.am-dots').getAttribute('data-frame'))>first+2);
@@ -83,7 +84,7 @@ try{
     localStorage.setItem(key,JSON.stringify({privateContent:{aboveCinematic:[{selected:30580,story:true,paused:true,discovered:[49336,62258,30580,999999],solarTime:Date.parse('2026-10-04T09:00:00Z')}]}}));
     localStorage.setItem('unrelated:key','keep');
   });await migrated.goto(url);await ready(migrated);
-  assert.equal(await migrated.locator('.am-dots').getAttribute('data-selected'),'30580');assert.ok((await migrated.locator('[data-story]').textContent()).includes('NASA'));
+  assert.equal(await migrated.locator('.am-dots').getAttribute('data-selected'),'30580');assert.ok((await migrated.locator('[data-story]').textContent()).length>30);
   const migratedState=await migrated.evaluate(key=>({state:JSON.parse(localStorage.getItem(key)),keys:Object.keys(localStorage),other:localStorage.getItem('unrelated:key')}),key);
   assert.deepEqual(migratedState.state.discovered,[49336,62258,30580]);assert.equal(migratedState.state.solarTime,undefined);assert.equal(migratedState.keys.some(k=>k.startsWith('codex:visualization-widget-state-v2:')),false);assert.equal(migratedState.other,'keep');
   assert.ok(Math.abs(Number(await migrated.locator('.am-phone').getAttribute('data-solar-time'))-Date.now())<60000);
@@ -100,5 +101,17 @@ try{
 
   const blocked=await browser.newContext({viewport:{width:390,height:1100},reducedMotion:'reduce'}),noStorage=await blocked.newPage();
   await noStorage.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Blocked','SecurityError');}});});await noStorage.goto(url);await ready(noStorage);await noStorage.locator('.am-cool').click();await noStorage.waitForSelector('.am-trail[data-selected]');await blocked.close();report.push({blockedStorageWorks:true});
+  const factFailure=await browser.newContext({viewport:{width:390,height:1100},reducedMotion:'reduce'}),factRetry=await factFailure.newPage();let factAttempts=0;
+  await factRetry.route('**/facts.*.json',route=>++factAttempts===1?route.fulfill({status:503,body:'unavailable'}):route.continue());
+  await factRetry.goto(url);await ready(factRetry);await factRetry.locator('.am-cool').click();await factRetry.waitForSelector('.am-cool:not(:disabled)');
+  assert.equal(factAttempts,1);assert.ok((await factRetry.locator('[data-story]').textContent()).length>30);assert.equal(await factRetry.locator('.am-phone').getAttribute('data-fact-count'),null);
+  const fallbackId=await factRetry.locator('.am-dots').getAttribute('data-selected');await factRetry.locator('.am-cool').click();await factRetry.waitForSelector('.am-phone[data-fact-objects="1115"]');
+  assert.notEqual(await factRetry.locator('.am-dots').getAttribute('data-selected'),fallbackId);assert.equal(factAttempts,2);await factFailure.close();report.push({factLibraryFailureFallback:true,explicitFactLibraryRetry:true});
+  // Long discovery sessions must keep history small and avoid adjacent repeats.
+  const stress=await browser.newPage({viewport:{width:390,height:1100},reducedMotion:'reduce'});await stress.goto(url);await ready(stress);let previous=null;
+  for(let i=0;i<80;i++){await stress.locator('.am-cool').click();const selected=Number(await stress.locator('.am-dots').getAttribute('data-selected'));assert.notEqual(selected,previous);previous=selected;}
+  await stress.waitForTimeout(200);const history=await stress.evaluate(key=>localStorage.getItem(key),key);assert.ok(history.length<1024);const historyState=JSON.parse(history);assert.ok(historyState.discovered.length<=64&&historyState.seenStories.length<=24&&historyState.seenGroups.length<=6);await stress.close();report.push({discoveryClicksStress:80,noAdjacentRepeatsStress:true,preferenceCharacters:history.length,boundedHistory:true});
+  // A context-only object must expose its reviewed fact and attribution on tap.
+  const contextId=data.objects.find(o=>facts.facts.filter(r=>r[1].includes(o.id)).length===1)?.id;assert.ok(contextId);const contextPage=await browser.newPage({viewport:{width:390,height:1100},reducedMotion:'reduce'});await contextPage.goto(url);await ready(contextPage);const target=data.objects.find(o=>o.id===contextId),contextSky=contextPage.locator('.am-sky'),contextWidth=await contextSky.evaluate(e=>e.clientWidth);await contextSky.click({position:{x:target.x*contextWidth/100,y:target.y*contextWidth/100}});await contextPage.waitForSelector('.am-phone[data-fact-objects="1115"]');const contextKey=await contextPage.locator('[data-story]').getAttribute('data-key');assert.ok(facts.facts.some(r=>r[0]===contextKey&&r[3]===0));assert.ok((await contextPage.locator('[data-sources]').textContent()).includes('J. McDowell'));await contextPage.close();report.push({contextFactOnTap:true,gcatAttribution:true});
   assert.deepEqual(errors,[]);await writeFile(new URL('report.json',output),JSON.stringify({report,errors},null,2));console.log(JSON.stringify({report,errors},null,2));
 }finally{await browser.close();}

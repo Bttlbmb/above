@@ -79,3 +79,17 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
 License source: https://github.com/lucide-icons/lucide/blob/main/LICENSE
+
+## GCAT fact data
+
+Data from GCAT (J. McDowell, https://planet4589.org/space/gcat/).
+Copyright (c) 2020-2026 Jonathan McDowell.
+Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+The app's concise catalog facts are edited from GCAT numeric fields and documented
+definitions, with estimated values and historical launch-mass wording preserved.
+This does not change the data's license. The source citations, exact catalog
+identities and independent-review annotations are retained in evidence/fact-review.json.
+Mission facts are original concise paraphrases with individual primary sources;
+the software license does not relicense those sources.

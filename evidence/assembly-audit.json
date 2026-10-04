@@ -1,0 +1,67 @@
+{
+  "status": "passed",
+  "factsSha256": "8c9a572706630ad0a763352ed01cbf189bf2808882d23a74b3911cf8edc54b32",
+  "reviewedAt": "2026-10-04",
+  "pipeline": {
+    "reviewer": "navigation_communications",
+    "auditScope": "pipeline_and_snapshot_consistency_only",
+    "method": "Independent csv.DictReader parsing of all four raw GCAT object/payload catalogs, exact active GP/frame joins; final identity-index and assembler not used as identity proof.",
+    "computedCounts": {
+      "individualFacts": 1115,
+      "distinctSatellites": 1115,
+      "rawEligibleRecordedFramePayloads": 1115,
+      "verifiedMissionProfiles": 67,
+      "missionProfilesInSnapshot": 36,
+      "distinctStoriesInSnapshot": 35,
+      "missionStorySatellites": 618,
+      "missionFactAssociations": 694,
+      "nonStarlinkSatellites": 605,
+      "nonStarlinkMissionStorySatellites": 108
+    },
+    "checks": {
+      "allNoradCosparPairsExactAndUnique": true,
+      "allIncludedIdsInRecordedFrame": true,
+      "profileMappingsMatchRawGcatGpAndReviewedSelectors": true,
+      "allResearchersDifferFromReviewers": true,
+      "allVerificationStatusVerified": true,
+      "all67ProfileSourceConfidenceHigh": true,
+      "checkedSourceUrlsAndAnnotationsPresent": true,
+      "all9SourceSnapshotHashesMatch": true,
+      "noDraftsOrUnresolvedPlaceholdersInDisplayText": true,
+      "all17EarthNameTemplatesResolvedWithoutOtherWordingChanges": true,
+      "noOneWebJoeySatMapped": true,
+      "iridiumNextOnly": true,
+      "galileo43567CutoffAndFirstTwoSarExclusion": true,
+      "mpowerBeamClaimLimitedToFirstPairAndUnmappedInFrame": true,
+      "starlinkClaimConstellationScoped": true,
+      "starlinkFullPdfMetadataAndChecksumConsistent": true,
+      "storyFamilyIdsAndSharedRadarStoryConsistent": true,
+      "reciprocalProfileReferencesAndBestInterestTierConsistent": true,
+      "recordedCountsRecomputedAndMatch": true
+    },
+    "errors": []
+  },
+  "earth": {
+    "reviewer": "science_facts",
+    "earthProfilesChecked": 17,
+    "acceptedSourceAnnotations": 18,
+    "recordedFrameAssociations": 25,
+    "distinctRecordedFrameSatellites": 24,
+    "distinctResearchSatellites": 105,
+    "checks": {
+      "allTemplatesMatchIndependentlyAcceptedWording": true,
+      "literalNamePlaceholdersRetainedInTemplates": true,
+      "genericTextSubstitutionCorrect": true,
+      "allRecordedFrameApplicableIdSetsMatchReview": true,
+      "allResearchApplicableIdSetsMatchReview": true,
+      "allSourceAnnotationsSupportFinalText": true,
+      "allAnnotationUrlsWereIndependentlyChecked": true,
+      "mevUsesCorrectNorthropSources": true,
+      "mevDockingCorrectlyLocatedAboveGeo": true,
+      "originalDeadIntelsatUrlAbsent": true,
+      "jaxa19ChannelsAndNarrowedEnvironmentalTargetsCorrect": true,
+      "interestTiersMatchReview": true
+    },
+    "errors": []
+  }
+}

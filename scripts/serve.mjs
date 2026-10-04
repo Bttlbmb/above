@@ -10,8 +10,8 @@ const server=http.createServer(async(req,res)=>{
     const route=decodeURIComponent(new URL(req.url,'http://localhost').pathname),file=path.resolve(root,'.'+(route==='/'?'/index.html':route));
     if(!file.startsWith(root)){res.writeHead(404);res.end('Not found');return;}
     const body=await readFile(file),etag='"'+createHash('sha256').update(body).digest('hex').slice(0,16)+'"';
-    const type={'.html':'text/html','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.txt':'text/plain'}[path.extname(file)]||'application/octet-stream';
-    const headers={'content-type':type+'; charset=utf-8','cache-control':route.startsWith('/assets/')?'public, max-age=31536000, immutable':'no-cache',etag};
+    const type={'.html':'text/html','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.txt':'text/plain','.webp':'image/webp'}[path.extname(file)]||'application/octet-stream';
+    const headers={'content-type':type+(type.startsWith('image/')?'':'; charset=utf-8'),'cache-control':route.startsWith('/assets/')?'public, max-age=31536000, immutable':'no-cache',etag};
     if(req.headers['if-none-match']===etag){res.writeHead(304,headers);res.end();return;}
     res.writeHead(200,headers);res.end(body);
   }catch{res.writeHead(404);res.end('Not found');}

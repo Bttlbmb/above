@@ -1,130 +1,38 @@
 {
   "name": "optimized",
-  "htmlBytes": 65069,
-  "htmlGzipBytes": 28224,
-  "htmlBrotliBytes": 21178,
+  "htmlBytes": 65194,
+  "htmlGzipBytes": 28242,
+  "htmlBrotliBytes": 21193,
   "runs": [
     {
-      "firstSkyMs": 165,
-      "initialNetworkBytes": 183498,
-      "networkBytes": 353119,
-      "idleDraws": 28,
-      "idleCanvasArcCalls": 0,
-      "idleCanvasFillCalls": 896,
-      "idleDrawCpuMs": 2.7999989986419678,
-      "meanDrawCpuMs": 0.09999996423721313,
-      "lightUpdates": 0,
-      "earthGeometryMutations": 0,
-      "storageBytes": 0,
-      "heapUsedBytes": 4653828,
-      "resources": [
-        {
-          "url": "http://127.0.0.1:4174/",
-          "bytes": 65069
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/style.51ce930ddf14.css",
-          "bytes": 6377
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/app.39b6782cf6cb.mjs",
-          "bytes": 17655
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/solar.fd1ae2e2f40a.mjs",
-          "bytes": 2269
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/sky.98d3686f045e.json",
-          "bytes": 92128
-        },
-        {
-          "url": "blob:http://127.0.0.1:4174/e835b6c8-18af-4d02-b2e3-a446d345021e",
-          "bytes": 17746
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/orbits.7365d90b0f26.json",
-          "bytes": 130133
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/satellite.65ebf6a76659.mjs",
-          "bytes": 39488
-        }
-      ]
-    },
-    {
-      "firstSkyMs": 65,
-      "initialNetworkBytes": 183498,
-      "networkBytes": 353119,
-      "idleDraws": 27,
-      "idleCanvasArcCalls": 0,
-      "idleCanvasFillCalls": 864,
-      "idleDrawCpuMs": 3.2000010013580322,
-      "meanDrawCpuMs": 0.11851855560585305,
-      "lightUpdates": 0,
-      "earthGeometryMutations": 0,
-      "storageBytes": 88,
-      "heapUsedBytes": 4297528,
-      "resources": [
-        {
-          "url": "http://127.0.0.1:4174/",
-          "bytes": 65069
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/style.51ce930ddf14.css",
-          "bytes": 6377
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/app.39b6782cf6cb.mjs",
-          "bytes": 17655
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/solar.fd1ae2e2f40a.mjs",
-          "bytes": 2269
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/sky.98d3686f045e.json",
-          "bytes": 92128
-        },
-        {
-          "url": "blob:http://127.0.0.1:4174/5d35c2f4-63fe-4cb7-9c5a-43baa03ef17b",
-          "bytes": 17746
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/orbits.7365d90b0f26.json",
-          "bytes": 130133
-        },
-        {
-          "url": "http://127.0.0.1:4174/assets/satellite.65ebf6a76659.mjs",
-          "bytes": 39488
-        }
-      ]
-    },
-    {
-      "firstSkyMs": 46,
-      "initialNetworkBytes": 183498,
-      "networkBytes": 353119,
+      "firstSkyMs": 168,
+      "initialNetworkBytes": 217976,
+      "networkBytes": 608587,
       "idleDraws": 26,
       "idleCanvasArcCalls": 0,
       "idleCanvasFillCalls": 832,
-      "idleDrawCpuMs": 3.799999952316284,
-      "meanDrawCpuMs": 0.1461538443198571,
+      "idleDrawCpuMs": 2.90000057220459,
+      "meanDrawCpuMs": 0.11153848354633038,
       "lightUpdates": 0,
       "earthGeometryMutations": 0,
-      "storageBytes": 88,
-      "heapUsedBytes": 4222484,
+      "storageBytes": 0,
+      "heapUsedBytes": 5928068,
       "resources": [
         {
           "url": "http://127.0.0.1:4174/",
-          "bytes": 65069
+          "bytes": 65194
         },
         {
-          "url": "http://127.0.0.1:4174/assets/style.51ce930ddf14.css",
-          "bytes": 6377
+          "url": "http://127.0.0.1:4174/assets/style.2b6828776246.css",
+          "bytes": 7218
         },
         {
-          "url": "http://127.0.0.1:4174/assets/app.39b6782cf6cb.mjs",
-          "bytes": 17655
+          "url": "http://127.0.0.1:4174/assets/stars.f6d2672ee5c3.webp",
+          "bytes": 30046
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/app.cdbdc4eb2acc.mjs",
+          "bytes": 21121
         },
         {
           "url": "http://127.0.0.1:4174/assets/solar.fd1ae2e2f40a.mjs",
@@ -135,8 +43,136 @@
           "bytes": 92128
         },
         {
-          "url": "blob:http://127.0.0.1:4174/b6f5f27b-bdde-4552-8326-b8bd44d48edd",
+          "url": "blob:http://127.0.0.1:4174/49442ff2-9002-4427-9b9e-5bb2ecd46405",
           "bytes": 17746
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/facts.2024557ce0b4.json",
+          "bytes": 218014
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/facts.b903b4a56ff8.mjs",
+          "bytes": 2976
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/orbits.7365d90b0f26.json",
+          "bytes": 130133
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/satellite.65ebf6a76659.mjs",
+          "bytes": 39488
+        }
+      ]
+    },
+    {
+      "firstSkyMs": 51,
+      "initialNetworkBytes": 217976,
+      "networkBytes": 608587,
+      "idleDraws": 26,
+      "idleCanvasArcCalls": 0,
+      "idleCanvasFillCalls": 832,
+      "idleDrawCpuMs": 4.40000057220459,
+      "meanDrawCpuMs": 0.16923079123863807,
+      "lightUpdates": 0,
+      "earthGeometryMutations": 0,
+      "storageBytes": 165,
+      "heapUsedBytes": 5608772,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/",
+          "bytes": 65194
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/style.2b6828776246.css",
+          "bytes": 7218
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/stars.f6d2672ee5c3.webp",
+          "bytes": 30046
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/app.cdbdc4eb2acc.mjs",
+          "bytes": 21121
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/solar.fd1ae2e2f40a.mjs",
+          "bytes": 2269
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/sky.98d3686f045e.json",
+          "bytes": 92128
+        },
+        {
+          "url": "blob:http://127.0.0.1:4174/9f363c44-f6c6-4290-8889-c5e4b23bb988",
+          "bytes": 17746
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/facts.b903b4a56ff8.mjs",
+          "bytes": 2976
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/facts.2024557ce0b4.json",
+          "bytes": 218014
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/orbits.7365d90b0f26.json",
+          "bytes": 130133
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/satellite.65ebf6a76659.mjs",
+          "bytes": 39488
+        }
+      ]
+    },
+    {
+      "firstSkyMs": 51,
+      "initialNetworkBytes": 217976,
+      "networkBytes": 608587,
+      "idleDraws": 27,
+      "idleCanvasArcCalls": 0,
+      "idleCanvasFillCalls": 864,
+      "idleDrawCpuMs": 2.8000004291534424,
+      "meanDrawCpuMs": 0.10370371959827564,
+      "lightUpdates": 0,
+      "earthGeometryMutations": 0,
+      "storageBytes": 165,
+      "heapUsedBytes": 6002816,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/",
+          "bytes": 65194
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/style.2b6828776246.css",
+          "bytes": 7218
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/stars.f6d2672ee5c3.webp",
+          "bytes": 30046
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/app.cdbdc4eb2acc.mjs",
+          "bytes": 21121
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/solar.fd1ae2e2f40a.mjs",
+          "bytes": 2269
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/sky.98d3686f045e.json",
+          "bytes": 92128
+        },
+        {
+          "url": "blob:http://127.0.0.1:4174/aec775bf-69bd-44c8-a846-307cd8523e2e",
+          "bytes": 17746
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/facts.2024557ce0b4.json",
+          "bytes": 218014
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/facts.b903b4a56ff8.mjs",
+          "bytes": 2976
         },
         {
           "url": "http://127.0.0.1:4174/assets/orbits.7365d90b0f26.json",

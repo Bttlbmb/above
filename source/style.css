@@ -1,10 +1,13 @@
-:root{color-scheme:dark;background:#0b1220}*{box-sizing:border-box}html,body{margin:0}body{padding:16px;background:#0b1220;font-family:-apple-system,system-ui,Segoe UI,sans-serif;font-size:14px;font-weight:430;line-height:1.5}button{cursor:pointer}button:disabled{cursor:default}button:focus-visible{outline:2px solid #f5bd8e;outline-offset:4px}svg{display:block}#above-cinematic{background-image:radial-gradient(circle,#ffffff24 .8px,transparent .8px);background-position:center;background-size:16px 16px}
+:root{color-scheme:dark;background:#0b1220}*{box-sizing:border-box}html,body{margin:0}body{padding:16px;background:#0b1220;font-family:-apple-system,system-ui,Segoe UI,sans-serif;font-size:14px;font-weight:430;line-height:1.5;isolation:isolate}body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url('__STARS__') center top/1536px 1024px no-repeat;opacity:.4;mask-image:linear-gradient(#000 80%,transparent)}button{cursor:pointer}button:disabled{cursor:default}button:focus-visible{outline:2px solid #f5bd8e;outline-offset:4px}svg{display:block}
 
     #above-cinematic{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     #above-cinematic .am-stage{min-height:0;padding:22px 14px 28px}
     #above-cinematic .am-mount{display:flex;justify-content:center}
     #above-cinematic .am-phone{--am-bg:#151f30;--am-text:#f5f1e9;--am-muted:#a9b4c4;--am-line:#2a3b50;--am-accent:#f5bd8e;--am-dot:#a6cde2;--am-warm:#ce795e;--am-glow-rgb:245,189,142;width:390px;max-width:100%;min-height:730px;padding:0 24px 23px;border-radius:24px;background:var(--am-bg);color:var(--am-text);font-size:14px;line-height:1.5}
     #above-cinematic .am-phone *{box-sizing:border-box}
+    #above-cinematic .am-phone{position:relative;isolation:isolate}
+    #above-cinematic .am-phone::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;background:url('__STARS__') center top/1536px 1024px no-repeat;opacity:.12;mix-blend-mode:lighten}
+    #above-cinematic .am-phone .am-sky{background:var(--am-bg)}
     #above-cinematic [hidden]{display:none!important}
     #above-cinematic .am-header{height:76px;display:flex;align-items:center;justify-content:space-between;gap:12px}
     #above-cinematic .am-header-tools{display:flex;align-items:center;gap:4px}
@@ -42,6 +45,9 @@
     #above-cinematic .am-elevation{font-size:14px;white-space:nowrap;color:var(--am-accent)}
     #above-cinematic .am-facts{display:flex;gap:5px 18px;flex-wrap:wrap;font-size:11px;color:var(--am-muted);margin-top:13px}
     #above-cinematic .am-story{font-size:13px;line-height:1.6;color:var(--am-text);margin:15px 0 0}
+    #above-cinematic .am-sources{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:3px 0 0}
+    #above-cinematic .am-sources a{display:inline-flex;align-items:center;min-height:32px;font-size:11px;line-height:1.3;color:var(--am-muted);text-underline-offset:3px}
+    #above-cinematic .am-sources a:focus-visible{outline:2px solid var(--am-accent);outline-offset:3px;border-radius:2px}
     #above-cinematic .am-cool{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:51px;margin-top:25px;padding:14px 10px;border:0;border-radius:10px;background:var(--am-accent);color:#142033;font:500 14px Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     #above-cinematic .am-cool svg{width:19px;height:19px;flex-shrink:0}
     #above-cinematic .am-study-note{margin:14px 0 0;text-align:center;font-size:11px;color:var(--am-muted)}

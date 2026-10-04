@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "mode": "built-in image_gen",
+  "preparedByThread": "01a1043f-bfbc-7310-85ac-5a0b5d35cd5d",
+  "generatedByThread": "01a106f1-acc8-75e0-80ba-60dedcddb1e0",
+  "prompt": "Use case: photorealistic-natural\nAsset type: subtle decorative background texture for the Living Earth satellite web app\nPrimary request: Create one restrained, photorealistic-looking natural star field in a 1536x1024 landscape frame, designed to sit quietly behind a functional globe and interface.\nScene/backdrop: Near-uniform deep dark navy background, approximately #0B1220, with ample uninterrupted dark negative space.\nSubject: Sparse, irregularly scattered pinpoint stars. The overwhelming majority are extremely tiny, faint points, with realistic variation in apparent brightness and only a few brighter points. Stars are subtly varied icy white and blue, with occasional warm white points.\nStyle/medium: Realistic astronomical photographic appearance, elegant and understated, with clean low-detail background for efficient image compression. Decorative natural sky texture, not an astronomically accurate map.\nLighting/mood: Quiet orbital dawn mood. Restrained overall brightness and contrast. Soft, very small optical falloff only around the few brightest stars, without giant glows.\nComposition/framing: A sparse random distribution across the full frame, plenty of dark negative space, no dominant focal point, no dense band, no regular pattern.\nConstraints: Generate exactly one image. Opaque background. No text, borders, watermarks, or interface elements.\nAvoid: Galaxies, nebulae, Milky Way bands, planets, Earth, moon, satellites, drawn constellation lines, lens flares, diffraction crosses, star icons, evenly spaced dots, obvious noise or grain, large luminous blobs, dramatic space-art gradients.",
+  "sourceSha256": "ae3dfee14721fbab41a72fef748d463951f353786132b6dd62a48ddfdbde7ebf",
+  "outputSha256": "f6d2672ee5c36ce71c0688829553271039d32cb5c3c051b2c3d22c579f1c519d",
+  "output": "source/assets/stars.webp",
+  "width": 1536,
+  "height": 1024,
+  "bytes": 30046,
+  "encoding": {
+    "format": "webp",
+    "quality": 88,
+    "effort": 6,
+    "resized": false
+  },
+  "scope": "Decorative generated texture, not an astronomically mapped sky."
+}

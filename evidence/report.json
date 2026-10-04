@@ -1,0 +1,44 @@
+{
+  "status": "verified",
+  "factsFile": "facts.json",
+  "factsSha256": "8c9a572706630ad0a763352ed01cbf189bf2808882d23a74b3911cf8edc54b32",
+  "factsBytes": 3332360,
+  "counts": {
+    "individualFacts": 1115,
+    "distinctSatellites": 1115,
+    "nonStarlinkSatellites": 605,
+    "verifiedMissionProfiles": 67,
+    "missionProfilesInSnapshot": 36,
+    "distinctStoriesInSnapshot": 35,
+    "missionStorySatellites": 618,
+    "nonStarlinkMissionStorySatellites": 108,
+    "missionFactAssociations": 694,
+    "profileTiers": {
+      "exceptional": 14,
+      "cool": 49,
+      "context": 4
+    },
+    "snapshotProfileTiers": {
+      "exceptional": 4,
+      "cool": 29,
+      "context": 3
+    },
+    "satellitesByBestTier": {
+      "cool": 609,
+      "context": 500,
+      "exceptional": 6
+    },
+    "rejectedIdentities": 12,
+    "preservedEstimateQualifiers": 1161
+  },
+  "checks": {
+    "catalogPeerHashMatches": true,
+    "rawSourceAuditPassed": true,
+    "uniqueSatelliteFacts": true,
+    "threshold500Passed": true,
+    "allProfilesHaveIndependentReviewer": true,
+    "allSourcesHttps": true,
+    "allTemplateTextResolvedForGenericDisplay": true
+  },
+  "notice": "Ready for integration; not published by this research task."
+}
