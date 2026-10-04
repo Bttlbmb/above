@@ -98,7 +98,7 @@ function renderFact(){
   let fact;
   if(factLibrary){const chosen=state.story?factLibrary.facts[state.choice]:null;fact=chosen?.ids.includes(state.selected)?chosen:(state.story?factTools.bestFact:factTools.detailFact)(factLibrary,state.selected);}
   fact||=discoveries.get(state.selected);
-  $('[data-story]').hidden=!fact;$('[data-story]').textContent=fact?.text||'';$('[data-story]').dataset.key=fact?.key||'recorded-'+state.selected;$('[data-story]').dataset.story=fact?.story??'';
+  $('[data-story]').hidden=!fact;$('[data-story]').textContent=(fact?.text||'').replace(/\brecorded sky\b/g,'sky snapshot');$('[data-story]').dataset.key=fact?.key||'recorded-'+state.selected;$('[data-story]').dataset.story=fact?.story??'';
 }
 async function loadFacts(){
   if(factLibrary)return true;
@@ -109,7 +109,7 @@ async function loadFacts(){
       state.seenStories=state.seenStories.filter(i=>i<factLibrary.storyCount);state.seenGroups=state.seenGroups.filter(i=>i<factLibrary.groups.length);
       if(!factLibrary.facts[state.choice]?.ids.includes(state.selected))state.choice=null;
       $('[data-fact-status]').textContent='';renderFact();save();return true;
-    }).catch(()=>{factsLoad=null;$('[data-fact-status]').textContent='More satellite facts could not load. Recorded facts remain available.';return false;});
+    }).catch(()=>{factsLoad=null;$('[data-fact-status]').textContent='More satellite facts could not load. Snapshot facts remain available.';return false;});
   }
   return factsLoad;
 }

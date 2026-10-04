@@ -27,7 +27,10 @@ try{
   assert.equal(requests.filter(u=>/^https?:/.test(u)).every(u=>new URL(u).origin===new URL(url).origin),true);
   assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-noon)<1000);assert.equal(await phone.getAttribute('data-phase'),'Daylight');
   assert.ok(Number(await phone.getAttribute('data-sun-elevation'))>45);assert.equal(await page.locator('[data-replay],[data-now],iframe').count(),0);
-  assert.equal(await phone.locator('[data-study-note]').textContent(),'Earth now · recorded satellites');
+  assert.equal(await phone.locator('[data-study-note]').textContent(),'Earth now · sky snapshot');
+  assert.equal(await phone.locator('.am-location time').textContent(),'10:05');assert.equal(await phone.locator('.am-location time').getAttribute('datetime'),data.recordedAt);
+  assert.equal(await phone.locator('.am-title,h2').count(),0);assert.doesNotMatch(await phone.innerText(),/\brecorded\b|Your sky/i);
+  assert.match(await phone.locator('[data-help]').textContent(),/snapshot of Seoul at 10:05 KST on October 4, 2026/);
   assert.equal(await phone.locator('a,[data-sources],.am-pause,[data-motion-icon]').count(),0);
   await page.clock.fastForward(120000);assert.ok(Math.abs(Number(await phone.getAttribute('data-solar-time'))-(noon+120000))<16000);
   report.push({sameOriginAssetsOnly:true,initialOrbitRequests:0,initialFactRequests:0,currentClock:true,updatesWithReducedMotion:true});
@@ -48,8 +51,8 @@ try{
     return {samples:reference.length,maxCosineError:maximum,dayPixels:day,nightPixels:night,badPixels:bad};
   },reference);
   assert.ok(alignment.maxCosineError<1e-12);assert.equal(alignment.badPixels,0);assert.ok(alignment.dayPixels>0&&alignment.nightPixels>0);report.push({projectionAlignment:alignment});
-  for(const width of [320,390,736]){await page.setViewportSize({width,height:1100});await page.clock.runFor(100);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await phone.screenshot({path:new URL(`now-${width}.png`,output).pathname});report.push({width,noOverflow:true});}
-  const oldSun=Number(await phone.getAttribute('data-solar-time'));await page.clock.fastForward(24*3600000);assert.ok(Number(await phone.getAttribute('data-solar-time'))-oldSun>=24*3600000-16000);report.push({clockDayRollover:true});
+  for(const width of [320,390,736]){await page.setViewportSize({width,height:1100});await page.clock.runFor(100);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);const layout=await phone.evaluate(element=>{const count=element.querySelector('.am-count').getBoundingClientRect(),sky=element.querySelector('.am-sky').getBoundingClientRect(),header=element.querySelector('.am-header').getBoundingClientRect(),location=element.querySelector('.am-location').getBoundingClientRect();return {countOffset:Math.abs((count.left+count.right-sky.left-sky.right)/2),countAboveGlobe:count.bottom<sky.top,headerFits:location.right<=header.right+.5&&location.left>header.left};});assert.ok(layout.countOffset<.5&&layout.countAboveGlobe&&layout.headerFits);await phone.screenshot({path:new URL(`now-${width}.png`,output).pathname});report.push({width,noOverflow:true,centeredCount:true,countAboveGlobe:true,headerFits:true});}
+  const oldSun=Number(await phone.getAttribute('data-solar-time'));await page.clock.fastForward(24*3600000);assert.ok(Number(await phone.getAttribute('data-solar-time'))-oldSun>=24*3600000-16000);assert.equal(await phone.locator('.am-location time').textContent(),'10:05');assert.equal(await phone.locator('.am-location time').getAttribute('datetime'),data.recordedAt);report.push({clockDayRollover:true,snapshotHeaderTimeUnchanged:true});
 
   await page.setViewportSize({width:390,height:1100});await page.clock.runFor(100);
   const star=data.objects.find(o=>o.id===57774),w=await sky.evaluate(e=>e.clientWidth);
@@ -106,7 +109,7 @@ try{
   const factFailure=await browser.newContext({viewport:{width:390,height:1100},reducedMotion:'reduce'}),factRetry=await factFailure.newPage();let factAttempts=0;
   await factRetry.route('**/facts.*.json',route=>++factAttempts===1?route.fulfill({status:503,body:'unavailable'}):route.continue());
   await factRetry.goto(url);await ready(factRetry);await factRetry.locator('.am-cool').click();await factRetry.waitForSelector('.am-cool:not(:disabled)');
-  assert.equal(factAttempts,1);assert.ok((await factRetry.locator('[data-story]').textContent()).length>30);assert.equal(await factRetry.locator('.am-phone').getAttribute('data-fact-count'),null);
+  assert.equal(factAttempts,1);assert.ok((await factRetry.locator('[data-story]').textContent()).length>30);assert.doesNotMatch(await factRetry.locator('.am-phone').innerText(),/\brecorded\b|Your sky/i);assert.equal(await factRetry.locator('.am-phone').getAttribute('data-fact-count'),null);
   const fallbackId=await factRetry.locator('.am-dots').getAttribute('data-selected');await factRetry.locator('.am-cool').click();await factRetry.waitForSelector('.am-phone[data-fact-objects="1115"]');
   assert.notEqual(await factRetry.locator('.am-dots').getAttribute('data-selected'),fallbackId);assert.equal(factAttempts,2);await factFailure.close();report.push({factLibraryFailureFallback:true,explicitFactLibraryRetry:true});
   // Long discovery sessions must keep history small and avoid adjacent repeats.

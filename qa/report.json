@@ -10,7 +10,7 @@
     {
       "projectionAlignment": {
         "samples": 1667,
-        "maxCosineError": 2.42861286636753e-15,
+        "maxCosineError": 2.4424906541753444e-15,
         "dayPixels": 1377,
         "nightPixels": 80,
         "badPixels": 0
@@ -18,18 +18,28 @@
     },
     {
       "width": 320,
-      "noOverflow": true
+      "noOverflow": true,
+      "centeredCount": true,
+      "countAboveGlobe": true,
+      "headerFits": true
     },
     {
       "width": 390,
-      "noOverflow": true
+      "noOverflow": true,
+      "centeredCount": true,
+      "countAboveGlobe": true,
+      "headerFits": true
     },
     {
       "width": 736,
-      "noOverflow": true
+      "noOverflow": true,
+      "centeredCount": true,
+      "countAboveGlobe": true,
+      "headerFits": true
     },
     {
-      "clockDayRollover": true
+      "clockDayRollover": true,
+      "snapshotHeaderTimeUnchanged": true
     },
     {
       "discoveryClicks": 12,

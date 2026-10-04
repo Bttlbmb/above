@@ -10,6 +10,8 @@ A static, irregular star texture adds quiet detail to the outer page and faint h
 
 This is a recorded design demo, not the live-location satellite app. The sky contains 1,127 active-catalog satellites above Seoul's geometric horizon at **2026-10-04 01:05:38 UTC** (10:05 KST), observer 37.5665° N, 126.978° E at sea level. Orbital coordinates remain at that snapshot while decorative shimmer animates and Earth lighting follows the current clock. Names and catalog numbers come from CelesTrak; altitude, speed, bearing and elevation are calculated using satellite.js 7.0.1. Mission stories use the reviewed official sources below. Country, launch and brightness facts are not inferred.
 
+The header shows **Seoul · 10:05**, with the satellite count centered above the globe. The former “Your sky.” heading and time row are omitted. The header time stays tied to this sky snapshot, while Earth's lighting follows the current clock. Its semantic `<time>` value and accessible description retain the snapshot date; screen-reader instructions explain the same distinction without the word “recorded.” Fallback presentation uses “sky snapshot” while preserving its original source wording in the data. Regenerating the demo requires updating the header time/date and count together with the sky and observer.
+
 CelesTrak's [active GP catalog](https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json), obtained on October 4, 2026, was propagated client-side using SGP4; records outside a 72-hour freshness window or with invalid propagation were excluded. The snapshot and minimal orbital inputs are bundled as lossless compact JSON tables. The demo makes no fresh CelesTrak request. CelesTrak [GP documentation](https://celestrak.org/NORAD/documentation/gp-data-formats.php) and [usage policy](https://celestrak.org/usage-policy.php) govern source format and retrieval frequency.
 
 Satellite dots use user-relative azimuth/elevation. The faint Earth is geographical context, not the geographic positions of the satellite dots. Selected paths contain 121 SGP4 samples over ten minutes, retain invalid gaps, refine horizon crossings and clip below the horizon. Solid means reconstructed past; dashed and an arrow mean predicted future. Apparent slow motion stays at true scale.
@@ -32,7 +34,7 @@ Individual physical context comes from [Jonathan McDowell's General Catalog of A
 
 The Sun's position uses [USNO's approximate solar algorithm](https://aa.usno.navy.mil/faq/sun_approx), sidereal rotation and observer-relative geometry. The runtime calculates only the current Sun direction; the removed sunrise/sunset time interface no longer triggers daily event searches. The solar helper retains its event calculation for independent mathematical verification, using [USNO's sea-level, unobstructed-horizon convention](https://aa.usno.navy.mil/faq/RST_defs).
 
-Earth lighting starts at the browser's current clock and refreshes each minute, including with reduced motion enabled. It catches up when the page returns to view. The clock is the only lighting time source; older saved times are ignored. The device clock is assumed to be accurate. The satellite snapshot keeps its separate recorded-time label.
+Earth lighting starts at the browser's current clock and refreshes each minute, including with reduced motion enabled. It catches up when the page returns to view. The clock is the only lighting time source; older saved times are ignored. The device clock is assumed to be accurate. The satellite snapshot's time appears beside Seoul in the header.
 
 Published Natural Earth land geometry was preprojected once with D3 7.9.0 and topojson-client 3.1.0 for the fixed Seoul observer. The browser reuses these SVG paths, with one land definition shared by the base and sunlit layers. A 256 × 256 lighting canvas uses the calculated Sun direction and globe surface normals. A smooth light-to-dark fade, artistic surface brightness and a narrow atmospheric glow add depth. A matching luminance mask brightens sunlit land. Brightness and bloom are aesthetic choices, not physical visibility predictions. The decorative shimmer does not imply naked-eye visibility.
 
@@ -66,19 +68,19 @@ Only selection, story visibility, selected fact index, library revision and boun
 
 ### Measured improvement
 
-Asset sizes below reflect the current built files and are uncompressed HTTP asset bodies; generated mask blobs are excluded. Drawing and heap figures come from three fresh local Chromium sessions of the fact-library/star update (`be740c95`), before the small links/control cleanup: 390 × 1,100 CSS pixels at 2× pixel density, current-clock fixture, normal motion. These measurements describe this desktop environment, not a guaranteed phone or hosted-network speed.
+These figures describe three fresh local Chromium sessions of the fact-library/star update (`be740c95`), before the later layout simplifications: 390 × 1,100 CSS pixels at 2× pixel density, current-clock fixture, normal motion. Asset sizes are uncompressed HTTP bodies; generated mask blobs are excluded. These measurements describe this desktop environment, not a guaranteed phone or hosted-network speed.
 
 | Measurement | Before | Optimized |
 | --- | ---: | ---: |
-| Initial HTTP assets | 1,927,477 B | 215,473 B (88.8% smaller, including the star texture) |
-| HTTP assets after first discovery and path | 1,927,477 B | 606,084 B (68.6% smaller, including the expanded fact library) |
-| HTML file | 976,654 B | 64,773 B (93.4% smaller) |
+| Initial HTTP assets | 1,927,477 B | 217,976 B (88.7% smaller, including the star texture) |
+| HTTP assets after first discovery and path | 1,927,477 B | 608,587 B (68.4% smaller, including the expanded fact library) |
+| HTML file | 976,654 B | 65,194 B (93.3% smaller) |
 | Median dot-frame drawing time | 1.45 ms | 0.112 ms (92.3% lower) |
 | Faint-dot fills per frame | 1,127 | 32 |
 | Median measured JS heap after selection | 6.99 MB | 5.93 MB |
 | Earth geometry mutations / lighting updates on selection | 6 / 2 | 0 / 0 |
 
-Full measurement reports are in `qa/performance-baseline.json` and `qa/performance-optimized.json`; the latter retains the measured pre-cleanup asset sizes. Removing links and the pause control reduces the built HTML/CSS/JavaScript by a further 2,503 B. Time-to-first-sky is also recorded, but network and browser-startup variation make it less portable than asset-size and draw-work comparisons. The migration verified exact equality of every retained field in all 1,127 sky rows and all 1,127 orbital rows against the prior source; no satellite facts or orbital values were invented or approximated to save space.
+Full measurement reports are in `qa/performance-baseline.json` and `qa/performance-optimized.json`; the latter retains that measured version. Subsequent removal of links, the pause control and the old title row further reduces the bundle. Time-to-first-sky is also recorded, but network and browser-startup variation make it less portable than asset-size and draw-work comparisons. The migration verified exact equality of every retained field in all 1,127 sky rows and all 1,127 orbital rows against the prior source; no satellite facts or orbital values were invented or approximated to save space.
 
 ### Verification
 
