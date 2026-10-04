@@ -10,7 +10,7 @@
     {
       "projectionAlignment": {
         "samples": 1667,
-        "maxCosineError": 2.4980018054066022e-15,
+        "maxCosineError": 2.42861286636753e-15,
         "dayPixels": 1377,
         "nightPixels": 80,
         "badPixels": 0
@@ -38,7 +38,8 @@
       "verifiedSatellites": 1115,
       "prioritizesExceptional": true,
       "contextExcludedFromDiscovery": true,
-      "sourceLinks": true,
+      "visibleLinksRemoved": true,
+      "pauseControlRemoved": true,
       "noAdjacentRepeats": true,
       "restoredDiscoveryHistory": true,
       "pathSamples": 121,
@@ -48,11 +49,14 @@
     {
       "axeViolations": 0,
       "cspViolations": 0,
-      "shimmerAndPauseWork": true,
-      "lightingUpdatesWhilePaused": true
+      "automaticShimmer": true,
+      "systemReducedMotionStopsShimmer": true,
+      "lightingUpdatesWithReducedMotion": true,
+      "savedPauseIgnored": true
     },
     {
       "legacyStateMigration": true,
+      "legacyPauseIgnored": true,
       "unrelatedStoragePreserved": true,
       "staleSolarTimeIgnored": true
     },
@@ -71,12 +75,12 @@
     {
       "discoveryClicksStress": 80,
       "noAdjacentRepeatsStress": true,
-      "preferenceCharacters": 569,
+      "preferenceCharacters": 554,
       "boundedHistory": true
     },
     {
       "contextFactOnTap": true,
-      "gcatAttribution": true
+      "gcatProvenanceRetained": true
     }
   ],
   "errors": []

@@ -9,7 +9,7 @@ const motion=matchMedia('(prefers-reduced-motion: reduce)'),rad=Math.PI/180,ns='
 const preferenceKey='above:living-earth:v1',pathCache=new Map(),colors=getComputedStyle(phone);
 const dotColor=colors.getPropertyValue('--am-dot').trim(),accent=colors.getPropertyValue('--am-accent').trim();
 const factsRevision='__FACTS_REVISION__';
-const state={selected:null,paused:false,story:false,discovered:[],library:factsRevision,choice:null,seenStories:[],seenGroups:[]};
+const state={selected:null,story:false,discovered:[],library:factsRevision,choice:null,seenStories:[],seenGroups:[]};
 let frame,objects=[],byId,ordered,discoveries,baseTime,observer,orbitRows,orbitalLibrary;
 let factLibrary=null,factTools=null,factsLoad=null,factsAttempt=0,interactionRevision=0;
 let orbitLoad=null,libraryLoad=null,libraryAttempt=0,skyLoad=null,ready=false,intersects=true,raf=null,lastFrame=0,width=0,dpr=0;
@@ -26,7 +26,7 @@ async function json(url){
 function validState(value){
   const sameLibrary=value?.library===factsRevision;
   const indexes=(list,limit)=>Array.isArray(list)?[...new Set(list.filter(i=>Number.isInteger(i)&&i>=0&&i<10000))].slice(-limit):[];
-  return {selected:byId.has(value?.selected)?value.selected:null,paused:value?.paused===true,
+  return {selected:byId.has(value?.selected)?value.selected:null,
     story:value?.story===true,library:factsRevision,choice:sameLibrary&&Number.isInteger(value?.choice)?value.choice:null,
     seenStories:sameLibrary?indexes(value?.seenStories,24):[],seenGroups:sameLibrary?indexes(value?.seenGroups,6):[],
     discovered:Array.isArray(value?.discovered)?[...new Set(value.discovered.filter(id=>byId.has(id)))].slice(-64):[]};
@@ -50,7 +50,7 @@ function flushSave(){
 function save(){clearTimeout(saveTimer);saveTimer=setTimeout(flushSave,150);}
 
 function active(){return ready&&intersects&&!document.hidden;}
-function animate(){return active()&&!motion.matches&&!state.paused;}
+function animate(){return active()&&!motion.matches;}
 function schedule(){if(animate()&&raf===null)raf=requestAnimationFrame(tick);else if(!animate()&&raf!==null){cancelAnimationFrame(raf);raf=null;}}
 function tick(time){raf=null;if(time-lastFrame>=50){lastFrame=time;drawDots(time);}schedule();}
 
@@ -68,7 +68,7 @@ function buildHighlight(){
 }
 function drawDots(time){
   if(!width)return;ctx.clearRect(0,0,width,width);ctx.fillStyle=dotColor;
-  const amplitude=motion.matches||state.paused?0:.09;
+  const amplitude=motion.matches?0:.09;
   for(const bucket of buckets){ctx.globalAlpha=.27+amplitude*Math.sin(time/1000/bucket.period*Math.PI*2+bucket.phase);ctx.fill(bucket.path);}
   if(highlight){ctx.fillStyle=accent;ctx.globalAlpha=.08;ctx.fill(highlight.halo);ctx.globalAlpha=1;ctx.fill(highlight.dot);}
   canvas.dataset.drawn=objects.length;canvas.dataset.selected=state.selected||'';canvas.dataset.frame=String(Number(canvas.dataset.frame||0)+1);
@@ -85,9 +85,6 @@ function render(){
   const object=byId.get(state.selected),selected=Boolean(object);
   for(const selector of ['.am-detail','.am-selected-label'])$(selector).hidden=!selected;
   $('.am-idle').hidden=selected;
-  const pause=$('.am-pause'),description=motion.matches?'Motion reduced':state.paused?'Resume shimmer':'Pause shimmer';
-  pause.setAttribute('aria-label',description);pause.title=description;pause.disabled=motion.matches;pause.setAttribute('aria-pressed',String(state.paused));
-  $('[data-motion-icon]').setAttribute('d',state.paused||motion.matches?'M7 4l9 6-9 6Z':'M7 5v10M13 5v10');
   if(object){
     $('[data-name]').textContent=object.name;$('[data-id]').textContent='Catalog '+object.id;$('[data-elevation]').textContent=Math.round(object.elevation)+'° up';
     $('[data-altitude]').textContent=number(object.altitude)+' km above Earth';$('[data-speed]').textContent=object.speed.toFixed(2)+' km/s';$('[data-bearing]').textContent=bearing(object.azimuth);
@@ -102,10 +99,6 @@ function renderFact(){
   if(factLibrary){const chosen=state.story?factLibrary.facts[state.choice]:null;fact=chosen?.ids.includes(state.selected)?chosen:(state.story?factTools.bestFact:factTools.detailFact)(factLibrary,state.selected);}
   fact||=discoveries.get(state.selected);
   $('[data-story]').hidden=!fact;$('[data-story]').textContent=fact?.text||'';$('[data-story]').dataset.key=fact?.key||'recorded-'+state.selected;$('[data-story]').dataset.story=fact?.story??'';
-  const citations=$('[data-sources]');citations.replaceChildren();citations.hidden=!fact;
-  const sources=fact?.sources||[fact?.source].filter(Boolean).map(url=>({url,title:url.includes('qzss')?'QZSS':url.includes('esa.int')?'ESA':url.includes('nasa.gov')?'NASA':'CelesTrak'}));
-  const publishers=new Set();
-  for(const source of sources||[]){const label=source.label||source.publisher||source.title,publisher=source.publisher||label;if(publishers.has(publisher))continue;publishers.add(publisher);const link=document.createElement('a');link.href=source.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;link.title=source.title;link.setAttribute('aria-label','Source: '+source.title);citations.append(link);}
 }
 async function loadFacts(){
   if(factLibrary)return true;
@@ -246,7 +239,6 @@ sky.addEventListener('click',event=>{
 function next(delta){const i=ordered.findIndex(o=>o.id===state.selected);select(ordered[(i+delta+ordered.length)%ordered.length].id);}
 sky.addEventListener('keydown',event=>{if(!ready)return;if(['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].includes(event.key)){event.preventDefault();next(event.key==='ArrowLeft'||event.key==='ArrowUp'?-1:1);}if(event.key==='Escape')select(null);});
 $('.am-cool').addEventListener('click',()=>{if(ready)discover();else loadSky();});
-$('.am-pause').addEventListener('click',()=>{if(!ready)return;state.paused=!state.paused;render();save();});
 new ResizeObserver(()=>{if(ready&&sizeCanvas()){labelPosition();drawDots(performance.now());if(state.selected)drawTrail();}}).observe(sky);
 new IntersectionObserver(entries=>{intersects=entries[0].isIntersecting;if(active())updateSolar();schedule();}).observe(phone);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flushSave();else updateSolar();schedule();});
