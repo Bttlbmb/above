@@ -1,6 +1,6 @@
 # Above · Living Earth
 
-A private, static, interactive demonstration of the cinematic Living Earth satellite-sky design. Open the page to see a gently shimmering satellite field; tap a dot for its calculated position and past/next five-minute trajectory. Replay sunrise or sunset to watch the Earth lighting change. No backend, accounts, analytics or location request is required by this demonstration.
+A private, static, interactive demonstration of the cinematic Living Earth satellite-sky design. Open the page to see a gently shimmering satellite field and Earth lighting for the current time in Seoul; tap a dot for its recorded position and past/next five-minute trajectory. Replay sunrise or sunset to watch the Earth lighting change, then return to now. No backend, accounts, analytics or location request is required by this demonstration.
 
 ## Scope and data
 
@@ -14,15 +14,19 @@ Satellite dots use user-relative azimuth/elevation. The faint Earth is geographi
 
 The Sun's position uses [USNO's approximate solar algorithm](https://aa.usno.navy.mil/faq/sun_approx), sidereal rotation and observer-relative geometry. Sunrise/sunset are searched and refined at a solar-center elevation of −0.833333°, following [USNO's sea-level, unobstructed-horizon convention](https://aa.usno.navy.mil/faq/RST_defs). Weather, terrain, refraction and observer height can shift observed times.
 
+Earth lighting starts at the browser's current clock and refreshes each minute, including with shimmer paused or reduced motion enabled. It catches up when the page returns to view. Sunrise and sunset are recalculated for the current Seoul calendar day. Explicit previews are labeled and have a **Return to now** control; a saved preview time never overrides the clock on reopening. The device clock is assumed to be accurate. The satellite snapshot keeps its separate recorded-time label.
+
 Published Natural Earth land geometry is projected with D3. A 256 × 256 lighting canvas uses the calculated Sun direction and globe surface normals. A smooth light-to-dark fade, artistic surface brightness and a narrow atmospheric glow add depth. A matching luminance mask brightens sunlit land. Brightness and bloom are aesthetic choices, not physical visibility predictions. The independently shimmering satellites do not imply naked-eye visibility.
 
-The preview buttons replay 90 minutes in 16 seconds. Reduced-motion preference shows still event states. A pause control stops decorative shimmer. Hidden/offscreen pages do not redraw it; Earth shading updates with solar-time changes rather than every animation frame. Keyboard arrows select satellites by compass bearing and Escape clears selection. Selection and motion preferences are saved only on this browser.
+The preview buttons replay 90 minutes in 16 seconds and hold the final preview until returning to now. Reduced-motion preference shows still event states. A pause control stops decorative shimmer. Hidden/offscreen pages do not redraw it; Earth shading updates with solar-time changes rather than every animation frame. Keyboard arrows select satellites by compass bearing and Escape clears selection. Selection and motion preferences are saved only on this browser.
 
 ## Architecture, setup and hosting
 
-`dist/index.html` is the standalone export of the previously reviewed interactive visualization, wrapped with its local preview/runtime styles. `.openai/hosting.json` declares static `dist` output. The Sites workflow tracks and pushes source, packages those static files and publishes a private Site. There is no build step, server runtime or OpenAI API key.
+`source/cinematic-living-earth.html` is the editable visualization source. `dist/index.html` is its standalone export, wrapped with the visualization runtime styles. `.openai/hosting.json` declares static `dist` output. The Sites workflow tracks and pushes source, packages those static files and publishes a private Site. There is no deployment build step, server runtime or OpenAI API key.
 
-To serve locally, run `node scripts/serve.mjs`, then open its printed URL. The original experiment was checked at 320, 390 and 736 px, including all-dot rendering, east/west solar lighting, soft transitions, SGP4 paths, motion pause/reduced-motion behavior and zero axe violations. The hosted export reuses that verified source.
+To serve locally, run `node scripts/serve.mjs`, then open its printed URL. Run `node scripts/solar-qa.mjs` for a dependency-free comparison against the independent Meeus/NOAA calculation: 120 hourly samples across equinoxes, solstices and the recorded date must agree within 0.02°. Tests also verify event crossings and polar no-event states. Browser checks cover globe projection alignment, the current clock, stale saved-state recovery, day rollover, explicit previews, 320/390/736 px layouts, SGP4 paths, motion pause/reduced-motion behavior and accessibility.
+
+`scripts/browser-qa.mjs` is the local development audit. It requires Playwright, Chromium, axe-core and the cached pinned assets from the sibling experiments; `PLAYWRIGHT_PACKAGE`, `CHROMIUM_PATH`, `AXE_PATH` and `QA_URL` can override this workspace's defaults. Its latest results are in `qa/report.json`; screenshots are generated locally and ignored by Git. To regenerate the standalone export after editing the source, use the bundled visualization renderer with `source/cinematic-living-earth.html`, `dist/index.html`, `--title 'Above · Living Earth'` and `--force`, then retain the outer document's description and favicon.
 
 The default export loads pinned static D3 7.9.0, topojson-client 3.1.0 and satellite.js 7.0.1 libraries from jsDelivr. A CDN failure can limit maps or paths; the recorded satellite sky remains usable. Access to those assets shares ordinary network request information with the CDN. Embedded orbital data and geometry require no data service request.
 

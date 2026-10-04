@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Above · Living Earth</title>
-<meta name="description" content="An interactive cinematic satellite sky with subtle shimmer, calculated Earth lighting, and sunrise and sunset replays.">
+<meta name="description" content="An interactive cinematic satellite sky with subtle shimmer, current Earth lighting, and sunrise and sunset previews.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101517'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23d8edb7' stroke-width='1.5'/%3E%3Ccircle cx='23' cy='10' r='3' fill='%23a7dcd9'/%3E%3C/svg%3E">
 <style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
 </head>
@@ -1545,12 +1545,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     &lt;div class=&quot;viz-row am-replays&quot; aria-label=&quot;Earth daylight previews&quot;&gt;
       &lt;button type=&quot;button&quot; class=&quot;btn&quot; data-replay=&quot;sunrise&quot;&gt;Replay sunrise&lt;/button&gt;
       &lt;button type=&quot;button&quot; class=&quot;btn&quot; data-replay=&quot;sunset&quot;&gt;Replay sunset&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;btn&quot; data-now hidden&gt;Return to now&lt;/button&gt;
     &lt;/div&gt;
   &lt;/section&gt;
   &lt;template id=&quot;am-phone-template&quot;&gt;
     &lt;div class=&quot;am-phone&quot; aria-label=&quot;Above satellite sky preview&quot;&gt;
       &lt;header class=&quot;am-header&quot;&gt;&lt;span class=&quot;am-brand&quot;&gt;&lt;i data-lucide=&quot;orbit&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;above&lt;/span&gt;&lt;span class=&quot;am-location&quot;&gt;&lt;i data-lucide=&quot;map-pin&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Seoul&lt;/span&gt;&lt;/header&gt;
-      &lt;div class=&quot;am-title&quot;&gt;&lt;h2&gt;Your sky.&lt;/h2&gt;&lt;span&gt;Recorded · 10:05&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;am-title&quot;&gt;&lt;h2&gt;Your sky.&lt;/h2&gt;&lt;span&gt;Sky recorded · 10:05&lt;/span&gt;&lt;/div&gt;
       &lt;p class=&quot;am-count&quot;&gt;1,127 satellites above the horizon&lt;/p&gt;
       &lt;button type=&quot;button&quot; class=&quot;am-sky cursor-interaction&quot; aria-label=&quot;Satellite sky. Tap a dot, or use arrow keys to select a satellite.&quot;&gt;
         &lt;canvas class=&quot;am-earth-light&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;
@@ -1678,7 +1679,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     const orbits=JSON.parse(document.getElementById(&#x27;am-orbits&#x27;).textContent),topology=JSON.parse(document.getElementById(&#x27;am-land&#x27;).textContent);
     const land=globalThis.topojson?.feature(topology,topology.objects.land),hasMap=Boolean(globalThis.d3&amp;&amp;land),rad=Math.PI/180,baseTime=Date.parse(frame.recordedAt);
     const observer={latitude:frame.observer.latitude*rad,longitude:frame.observer.longitude*rad,height:0},byId=new Map(objects.map(o=&gt;[o.id,o])),ordered=[...objects].sort((a,b)=&gt;a.azimuth-b.azimuth||a.id-b.id);
-    const dayStart=Date.parse(&#x27;2026-10-03T15:00:00Z&#x27;),events=aboveCinematicSolar.events(dayStart,frame.observer.latitude,frame.observer.longitude),formatTime=time=&gt;new Intl.DateTimeFormat(&#x27;en-GB&#x27;,{timeZone:&#x27;Asia/Seoul&#x27;,hour:&#x27;2-digit&#x27;,minute:&#x27;2-digit&#x27;}).format(new Date(time));
+    const seoulOffset=9*3600000,timeFormatter=new Intl.DateTimeFormat(&#x27;en-GB&#x27;,{timeZone:&#x27;Asia/Seoul&#x27;,hour:&#x27;2-digit&#x27;,minute:&#x27;2-digit&#x27;}),formatTime=time=&gt;timeFormatter.format(new Date(time));
+    let eventDay=null,dayEvents=null;
+    function eventsFor(time){
+      const start=Math.floor((time+seoulOffset)/86400000)*86400000-seoulOffset;
+      if(start!==eventDay){eventDay=start;dayEvents=aboveCinematicSolar.events(start,frame.observer.latitude,frame.observer.longitude);}
+      return dayEvents;
+    }
     const motionPreference=matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;),ns=&#x27;http://www.w3.org/2000/svg&#x27;,pathCache=new Map(),models=[];
     let orbitalLibrary=null,pathFailure=false,raf=null,lastFrame=0;
     const svgNode=(name,attrs={})=&gt;{const node=document.createElementNS(ns,name);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;};
@@ -1758,12 +1765,16 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
     }
     function updateSolar(model,force=false){
-      const {phone,state,treatment}=model,time=state.solarTime;if(!force&amp;&amp;model.lastSolarTime!==null&amp;&amp;Math.abs(time-model.lastSolarTime)&lt;60000)return;model.lastSolarTime=time;
+      const {phone,state,treatment}=model;if(state.solarMode===&#x27;now&#x27;)state.solarTime=Date.now();
+      const time=state.solarTime;if(!force&amp;&amp;model.lastSolarTime!==null&amp;&amp;Math.floor(time/60000)===Math.floor(model.lastSolarTime/60000))return;model.lastSolarTime=time;
+      const events=eventsFor(time),preview=state.solarMode!==&#x27;now&#x27;;
       const sun=aboveCinematicSolar.position(time,frame.observer.latitude,frame.observer.longitude),rising=aboveCinematicSolar.position(time+60000,frame.observer.latitude,frame.observer.longitude).elevation&gt;sun.elevation;
       const twilight=sun.elevation&gt;=-12&amp;&amp;sun.elevation&lt;4,phase=sun.elevation&gt;=4?&#x27;Daylight&#x27;:sun.elevation&gt;=-.833333?(rising?&#x27;Sunrise&#x27;:&#x27;Sunset&#x27;):sun.elevation&gt;=-18?(rising?&#x27;Dawn&#x27;:&#x27;Dusk&#x27;):&#x27;Night&#x27;;
-      const preview=treatment!==&#x27;shimmer&#x27;;phone.querySelector(&#x27;[data-phase]&#x27;).textContent=preview?`${phase} · ${formatTime(time)}`:&#x27;Quiet shimmer&#x27;;
-      phone.querySelector(&#x27;[data-event]&#x27;).textContent=sun.elevation&lt;0&amp;&amp;rising?`Sunrise ≈ ${formatTime(events.sunrise)}`:`Sunset ≈ ${formatTime(events.sunset)}`;
-      phone.querySelector(&#x27;[data-study-note]&#x27;).textContent=preview?&#x27;Color preview · recorded satellites&#x27;:&#x27;Motion study · decorative shimmer&#x27;;
+      phone.querySelector(&#x27;[data-phase]&#x27;).textContent=`${preview?&#x27;Preview · &#x27;:&#x27;&#x27;}${phase} · ${formatTime(time)}`;
+      const kind=sun.elevation&lt;0&amp;&amp;rising?&#x27;sunrise&#x27;:&#x27;sunset&#x27;,event=events[kind];
+      phone.querySelector(&#x27;[data-event]&#x27;).textContent=event===null?&#x27;No sunrise / sunset today&#x27;:`${kind===&#x27;sunrise&#x27;?&#x27;Sunrise&#x27;:&#x27;Sunset&#x27;} ≈ ${formatTime(event)}`;
+      phone.querySelector(&#x27;[data-study-note]&#x27;).textContent=preview?&#x27;Earth preview · recorded satellites&#x27;:&#x27;Earth now · recorded satellites&#x27;;
+      model.section.querySelector(&#x27;[data-now]&#x27;).hidden=!preview;
       const glow=phone.querySelector(&#x27;.am-horizon-glow&#x27;),warm=rising?[216,237,183]:[201,186,152];phone.style.setProperty(&#x27;--am-glow-rgb&#x27;,warm.join(&#x27;,&#x27;));
       const daylight=Math.max(0,Math.min(1,(sun.elevation+12)/20));
       if(treatment===&#x27;horizon&#x27;){
@@ -1773,7 +1784,8 @@ html&gt;body{padding:0}&lt;/style&gt;
         glow.style.left=(50+Math.sin(sun.azimuth*rad)*radius)+&#x27;%&#x27;;glow.style.top=(50-Math.cos(sun.azimuth*rad)*radius)+&#x27;%&#x27;;glow.style.opacity=strength;
       }
       if(treatment===&#x27;earth&#x27;&amp;&amp;hasMap)drawLight(model,sun);
-      phone.dataset.solarTime=time;phone.dataset.sunElevation=sun.elevation;phone.dataset.sunAzimuth=sun.azimuth;phone.dataset.phase=phase;phone.dataset.sunrise=events.sunrise;phone.dataset.sunset=events.sunset;
+      phone.dataset.solarTime=time;phone.dataset.solarMode=state.solarMode;phone.dataset.sunElevation=sun.elevation;phone.dataset.sunAzimuth=sun.azimuth;phone.dataset.phase=phase;phone.dataset.sunrise=events.sunrise;phone.dataset.sunset=events.sunset;
+      model.section.querySelectorAll(&#x27;[data-replay]&#x27;).forEach(button=&gt;button.disabled=Boolean(model.replay)||events[button.dataset.replay]===null);
     }
     function drawDots(model,time){
       const {phone,sky,canvas,ctx,state}=model,w=sky.clientWidth;if(!w)return;const colors=getComputedStyle(phone);ctx.clearRect(0,0,w,w);ctx.fillStyle=colors.getPropertyValue(&#x27;--am-dot&#x27;).trim();
@@ -1794,15 +1806,15 @@ html&gt;body{padding:0}&lt;/style&gt;
       const story=phone.querySelector(&#x27;[data-story]&#x27;);story.hidden=!state.story;story.textContent=state.story&amp;&amp;object?`At ${Math.round(object.elevation)}° up, ${object.name.split(&#x27; (&#x27;)[0]} is almost directly overhead. Its calculated altitude is about ${number(Math.round(object.altitude/100)*100)} km.`:&#x27;&#x27;;
       drawEarth(model);updateSolar(model,true);drawTrail(model);drawDots(model,performance.now());
     }
-    function save(){window.openai?.setWidgetState?.({modelContent:null,privateContent:{aboveCinematic:models.map(m=&gt;({selected:m.state.selected,paused:m.state.paused,story:m.state.story,solarTime:m.state.solarTime}))}})?.catch(()=&gt;{});}
-    function restore(value){const saved=value?.privateContent?.aboveCinematic;for(const [index,model]of models.entries()){const s=saved?.[index];if(!s)continue;model.state.selected=byId.has(s.selected)?s.selected:null;model.state.paused=Boolean(s.paused);model.state.story=Boolean(s.story)&amp;&amp;s.selected===objects[0].id;if(Number.isFinite(s.solarTime)&amp;&amp;s.solarTime&gt;=dayStart&amp;&amp;s.solarTime&lt;dayStart+86400000)model.state.solarTime=s.solarTime;}}
+    function save(){window.openai?.setWidgetState?.({modelContent:null,privateContent:{aboveCinematic:models.map(m=&gt;({selected:m.state.selected,paused:m.state.paused,story:m.state.story}))}})?.catch(()=&gt;{});}
+    function restore(value){const saved=value?.privateContent?.aboveCinematic;for(const [index,model]of models.entries()){const s=saved?.[index];if(!s)continue;model.state.selected=byId.has(s.selected)?s.selected:null;model.state.paused=Boolean(s.paused);model.state.story=Boolean(s.story)&amp;&amp;s.selected===objects[0].id;}}
     function visible(model){return !model.section.hidden&amp;&amp;!document.hidden&amp;&amp;model.intersects;}
     function needsAnimation(){return models.some(m=&gt;visible(m)&amp;&amp;((!motionPreference.matches&amp;&amp;!m.state.paused&amp;&amp;m.state.shimmer&gt;0)||m.replay));}
     function schedule(){if(raf===null&amp;&amp;needsAnimation())raf=requestAnimationFrame(tick);}
     function tick(time){
       raf=null;if(time-lastFrame&gt;=50){lastFrame=time;
         for(const model of models){if(!visible(model))continue;
-          if(model.replay){const replay=model.replay,progress=Math.min(1,(time-replay.started)/16000);model.state.solarTime=replay.from+(replay.to-replay.from)*progress;updateSolar(model);if(progress&gt;=1){model.replay=null;model.section.querySelectorAll(&#x27;[data-replay]&#x27;).forEach(b=&gt;b.disabled=false);model.phone.querySelector(&#x27;[data-preview-announcement]&#x27;).textContent=`${replay.kind} preview complete.`;save();}}
+          if(model.replay){const replay=model.replay,progress=Math.min(1,(time-replay.started)/16000);model.state.solarTime=replay.from+(replay.to-replay.from)*progress;updateSolar(model);if(progress&gt;=1){model.replay=null;updateSolar(model,true);model.phone.querySelector(&#x27;[data-preview-announcement]&#x27;).textContent=`${replay.kind} preview complete. Return to now to see current Earth lighting.`;save();}}
           if(!motionPreference.matches&amp;&amp;!model.state.paused)drawDots(model,time);
         }
       }
@@ -1812,7 +1824,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       section.querySelector(&#x27;.am-mount&#x27;).append(document.getElementById(&#x27;am-phone-template&#x27;).content.cloneNode(true));
       const phone=section.querySelector(&#x27;.am-phone&#x27;),sky=phone.querySelector(&#x27;.am-sky&#x27;),canvas=phone.querySelector(&#x27;.am-dots&#x27;),treatment=section.dataset.treatment;
       phone.setAttribute(&#x27;aria-label&#x27;,section.dataset.variant+&#x27; satellite sky preview&#x27;);phone.querySelector(&#x27;[data-help]&#x27;).id=`am-help-${index}`;sky.setAttribute(&#x27;aria-describedby&#x27;,`am-help-${index}`);
-      const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector(&#x27;.am-earth-light&#x27;),maskCanvas:document.createElement(&#x27;canvas&#x27;),ctx:canvas.getContext(&#x27;2d&#x27;),treatment,dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,replay:null,state:{selected:null,story:false,paused:false,shimmer:9,glow:100,light:100,atmosphere:100,softness:6,solarTime:events.sunset-12*60000}};models.push(model);
+      const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector(&#x27;.am-earth-light&#x27;),maskCanvas:document.createElement(&#x27;canvas&#x27;),ctx:canvas.getContext(&#x27;2d&#x27;),treatment,dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,replay:null,state:{selected:null,story:false,paused:false,shimmer:9,glow:100,light:100,atmosphere:100,softness:6,solarMode:&#x27;now&#x27;,solarTime:Date.now()}};models.push(model);
       function select(id){model.state.selected=id;model.state.story=false;render(model);save();}
       function next(delta){const i=ordered.findIndex(o=&gt;o.id===model.state.selected);select(ordered[(i+delta+ordered.length)%ordered.length].id);}
       sky.addEventListener(&#x27;click&#x27;,event=&gt;{if(event.detail===0){next(1);return;}const rect=sky.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top,w=rect.width;let nearest=null,distance=22*22;for(const object of objects){const d=(object.x*w/100-x)**2+(object.y*w/100-y)**2;if(d&lt;distance){nearest=object;distance=d;}}if(nearest)select(nearest.id);else if(model.state.selected){model.state.selected=null;model.state.story=false;render(model);save();}});
@@ -1820,18 +1832,21 @@ html&gt;body{padding:0}&lt;/style&gt;
       phone.querySelector(&#x27;.am-cool&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{model.state.selected=objects[0].id;model.state.story=true;render(model);save();});
       phone.querySelector(&#x27;.am-pause&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{model.state.paused=!model.state.paused;render(model);save();schedule();});
       section.querySelectorAll(&#x27;[data-replay]&#x27;).forEach(button=&gt;button.addEventListener(&#x27;click&#x27;,()=&gt;{
-        const kind=button.dataset.replay,event=events[kind],from=event-45*60000,to=event+45*60000;
+        const kind=button.dataset.replay,event=eventsFor(Date.now())[kind];if(event===null)return;
+        const from=event-45*60000,to=event+45*60000;model.state.solarMode=&#x27;preview&#x27;;
         if(motionPreference.matches){model.state.solarTime=event;model.replay=null;updateSolar(model,true);model.phone.querySelector(&#x27;[data-preview-announcement]&#x27;).textContent=`${kind} color preview, motion reduced.`;save();return;}
-        model.state.solarTime=from;updateSolar(model,true);model.replay={kind,from,to,started:performance.now()};section.querySelectorAll(&#x27;[data-replay]&#x27;).forEach(b=&gt;b.disabled=true);model.phone.querySelector(&#x27;[data-preview-announcement]&#x27;).textContent=`Playing ${kind} color preview.`;schedule();
+        model.state.solarTime=from;model.replay={kind,from,to,started:performance.now()};updateSolar(model,true);model.phone.querySelector(&#x27;[data-preview-announcement]&#x27;).textContent=`Playing ${kind} color preview.`;schedule();
       }));
+      section.querySelector(&#x27;[data-now]&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{model.replay=null;model.state.solarMode=&#x27;now&#x27;;updateSolar(model,true);model.phone.querySelector(&#x27;[data-preview-announcement]&#x27;).textContent=&#x27;Earth lighting returned to the current time in Seoul.&#x27;;save();schedule();});
       new ResizeObserver(()=&gt;{render(model);schedule();}).observe(sky);
-      new IntersectionObserver(entries=&gt;{model.intersects=entries[0].isIntersecting;schedule();},{threshold:0}).observe(phone);
+      new IntersectionObserver(entries=&gt;{model.intersects=entries[0].isIntersecting;if(model.intersects)updateSolar(model);schedule();},{threshold:0}).observe(phone);
       if(globalThis.Tweak){const tweak=new Tweak({container:phone,onChange:()=&gt;{render(model);schedule();}});tweak.addSlider(model.state,&#x27;shimmer&#x27;,{label:&#x27;Shimmer strength&#x27;,min:0,max:15,step:1,unit:&#x27;%&#x27;,reference:&#x27;satellite-shimmer&#x27;});tweak.addSlider(model.state,&#x27;light&#x27;,{label:&#x27;Sunlit Earth brightness&#x27;,min:40,max:150,step:5,unit:&#x27;%&#x27;,reference:&#x27;earth-light&#x27;});tweak.addSlider(model.state,&#x27;atmosphere&#x27;,{label:&#x27;Atmospheric glow&#x27;,min:0,max:150,step:5,unit:&#x27;%&#x27;,reference:&#x27;earth-atmosphere&#x27;});tweak.addSlider(model.state,&#x27;softness&#x27;,{label:&#x27;Day/night edge softness&#x27;,min:2,max:12,step:1,unit:&#x27;°&#x27;,reference:&#x27;earth-softness&#x27;});}
     }
     restore(window.openai?.widgetState);models.forEach(render);schedule();
     if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
     const variantObserver=new MutationObserver(()=&gt;{models.forEach(m=&gt;{if(!m.section.hidden)render(m);});schedule();});models.forEach(model=&gt;variantObserver.observe(model.section,{attributes:true,attributeFilter:[&#x27;hidden&#x27;]}));
-    document.addEventListener(&#x27;visibilitychange&#x27;,()=&gt;{if(document.hidden&amp;&amp;raf!==null){cancelAnimationFrame(raf);raf=null;}else schedule();});
+    setInterval(()=&gt;{for(const model of models)if(visible(model)&amp;&amp;model.state.solarMode===&#x27;now&#x27;)updateSolar(model);},15000);
+    document.addEventListener(&#x27;visibilitychange&#x27;,()=&gt;{if(document.hidden&amp;&amp;raf!==null){cancelAnimationFrame(raf);raf=null;}else{models.forEach(model=&gt;{if(visible(model)&amp;&amp;model.state.solarMode===&#x27;now&#x27;)updateSolar(model);});schedule();}});
     motionPreference.addEventListener(&#x27;change&#x27;,()=&gt;{models.forEach(model=&gt;{model.replay=null;model.section.querySelectorAll(&#x27;[data-replay]&#x27;).forEach(b=&gt;b.disabled=false);render(model);});schedule();});
     window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{restore(event.detail?.globals?.widgetState);models.forEach(render);schedule();});
     import(&#x27;https://cdn.jsdelivr.net/npm/satellite.js@7.0.1/+esm&#x27;).then(lib=&gt;{orbitalLibrary=lib;models.forEach(render);}).catch(()=&gt;{pathFailure=true;models.forEach(render);});
