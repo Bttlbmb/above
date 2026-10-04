@@ -9,7 +9,7 @@
     {
       "projectionAlignment": {
         "samples": 1667,
-        "maxCosineError": 2.4702462297909733e-15,
+        "maxCosineError": 2.5951463200613034e-15,
         "dayPixels": 1377,
         "nightPixels": 80,
         "badPixels": 0

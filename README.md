@@ -2,6 +2,8 @@
 
 A private, static, interactive demonstration of the cinematic Living Earth satellite-sky design. Open the page to see a gently shimmering satellite field and Earth lighting for the current time in Seoul; tap a dot for its recorded position and past/next five-minute trajectory. No backend, accounts, analytics or location request is required by this demonstration.
 
+The Orbital Dawn palette uses a navy background and surface, blue satellite dots, warm off-white text and peach highlights. The globe's RGB shading uses the same palette: blue oceans, peach sunlit land and a subtle warm atmospheric rim. This changes only visual colors; current solar direction, lighting timing and geometric boundaries are preserved. The favicon keeps its original orbit motif in the new colors.
+
 ## Scope and data
 
 This is a recorded design demo, not the live-location satellite app. The sky contains 1,127 active-catalog satellites above Seoul's geometric horizon at **2026-10-04 01:05:38 UTC** (10:05 KST), observer 37.5665° N, 126.978° E at sea level. Orbital coordinates remain at that snapshot while decorative shimmer animates and Earth lighting follows the current clock. Names and catalog numbers come from CelesTrak; altitude, speed, bearing and elevation are calculated using satellite.js 7.0.1. Mission stories use the reviewed official sources below. Country, launch and brightness facts are not inferred.
@@ -60,12 +62,12 @@ Three fresh local Chromium sessions, 390 × 1,100 CSS pixels at 2× pixel densit
 
 | Measurement | Before | Optimized |
 | --- | ---: | ---: |
-| Initial HTTP assets | 1,927,477 B | 183,497 B (90.5% smaller) |
-| HTTP assets after first path | 1,927,477 B | 353,118 B (81.7% smaller) |
+| Initial HTTP assets | 1,927,477 B | 183,498 B (90.5% smaller) |
+| HTTP assets after first path | 1,927,477 B | 353,119 B (81.7% smaller) |
 | HTML file | 976,654 B | 65,069 B (93.3% smaller) |
-| Median dot-frame drawing time | 1.45 ms | 0.104 ms (92.8% lower) |
+| Median dot-frame drawing time | 1.45 ms | 0.119 ms (91.8% lower) |
 | Faint-dot fills per frame | 1,127 | 32 |
-| Median measured JS heap after selection | 6.99 MB | 4.65 MB |
+| Median measured JS heap after selection | 6.99 MB | 4.30 MB |
 | Earth geometry mutations / lighting updates on selection | 6 / 2 | 0 / 0 |
 
 Full reports are in `qa/performance-baseline.json` and `qa/performance-optimized.json`. Time-to-first-sky is also recorded, but network and browser-startup variation make it less portable than asset-size and draw-work comparisons. The migration verified exact equality of every retained field in all 1,127 sky rows and all 1,127 orbital rows against the prior source; no satellite facts or orbital values were invented or approximated to save space.
@@ -77,6 +79,8 @@ Full reports are in `qa/performance-baseline.json` and `qa/performance-optimized
 `node scripts/browser-qa.mjs` checks 320/390/736 px layouts, globe/solar-mask alignment, clock rollover, 121-sample SGP4 paths matching the preserved snapshot, 12 discovery clicks with nine unique facts before repetition, saved-history restoration, old-state migration, blocked storage, lazy same-origin requests, network failure/retry, shimmer/pause/reduced motion, accessibility and CSP. The latest report is `qa/report.json`. It requires Playwright, Chromium, axe-core and the pinned D3 reference asset from the sibling experiments for independent projection verification. `PLAYWRIGHT_PACKAGE`, `CHROMIUM_PATH`, `AXE_PATH` and `QA_URL` override local defaults.
 
 `node scripts/performance-qa.mjs` runs the three-session rendering/loading audit. `--baseline` is retained for use against the prior wrapper export. Screenshots are generated locally and ignored by Git. Development tools and QA assets are excluded from the hosted `dist` bundle.
+
+`node scripts/capture-palette.mjs` captures the actual Orbital Dawn page at 390 px phone and 1,280 px desktop widths using the current device clock and normal motion preference. It verifies the palette, object count, path sample count and lack of horizontal overflow. Captures are in `qa/orbital-dawn-phone-idle.png`, `qa/orbital-dawn-phone.png` and `qa/orbital-dawn-desktop.png`; their recorded solar direction and palette values are in `qa/palette-review.json`.
 
 The local `research/` working directory is also ignored by this application's source repository. Its existing downloads are preserved on disk; they are not needed to build or run this recorded snapshot.
 

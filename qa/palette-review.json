@@ -1,0 +1,51 @@
+{
+  "capturedAt": "2026-10-04T08:30:15.661Z",
+  "views": [
+    {
+      "name": "phone",
+      "width": 390,
+      "overflow": false,
+      "objects": 1127,
+      "selected": 67555,
+      "samples": 121,
+      "clock": 1791102614927,
+      "sunDirection": [
+        -0.9728629529586398,
+        -0.19394109620311983,
+        0.12619241642875217
+      ],
+      "palette": {
+        "bg": "#151f30",
+        "text": "#f5f1e9",
+        "muted": "#a9b4c4",
+        "line": "#2a3b50",
+        "accent": "#f5bd8e",
+        "dot": "#a6cde2",
+        "warm": "#ce795e"
+      }
+    },
+    {
+      "name": "desktop",
+      "width": 1280,
+      "overflow": false,
+      "objects": 1127,
+      "selected": 49336,
+      "samples": 121,
+      "clock": 1791102615467,
+      "sunDirection": [
+        -0.9728715224057463,
+        -0.19391783110990166,
+        0.12616210076547207
+      ],
+      "palette": {
+        "bg": "#151f30",
+        "text": "#f5f1e9",
+        "muted": "#a9b4c4",
+        "line": "#2a3b50",
+        "accent": "#f5bd8e",
+        "dot": "#a6cde2",
+        "warm": "#ce795e"
+      }
+    }
+  ]
+}

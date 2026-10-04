@@ -166,9 +166,9 @@ function updateSolar(){
     if(r<=1){
       const z=Math.sqrt(Math.max(0,1-r*r)),cosine=east*sx-north*sy+up*z,day=smooth((cosine+softness)/(2*softness)),lambert=Math.pow(Math.max(0,cosine),.65),volume=.7+.3*z;
       const rim=Math.exp(-(((r-.985)/.014)**2))*Math.pow(Math.max(0,east*sx-north*sy+.12*up),.7),dusk=Math.exp(-((cosine/(softness*.8))**2))*.7*(1-z*.3),lit=day*(.4+.6*lambert);
-      surface.data[i]=Math.min(255,(10+lit*34+dusk*4)*volume+rim*65);surface.data[i+1]=Math.min(255,(17+lit*49+dusk*6)*volume+rim*79);surface.data[i+2]=Math.min(255,(21+lit*42+dusk*5)*volume+rim*62);surface.data[i+3]=Math.round(255*smooth((1.004-r)/.009));
+      surface.data[i]=Math.min(255,(11+lit*32+dusk*18)*volume+rim*98);surface.data[i+1]=Math.min(255,(18+lit*45+dusk*8)*volume+rim*76);surface.data[i+2]=Math.min(255,(32+lit*66+dusk*4)*volume+rim*57);surface.data[i+3]=Math.round(255*smooth((1.004-r)/.009));
       const brightness=Math.min(255,Math.round(25+day*(95+lambert*130)));maskPixels.data[i]=maskPixels.data[i+1]=maskPixels.data[i+2]=brightness;maskPixels.data[i+3]=255;
-    }else{const limb=Math.pow(Math.max(0,(east*sx-north*sy)/r),1.1),bloom=Math.exp(-(((r-1)/.043)**2))*limb*.21;surface.data[i]=167;surface.data[i+1]=220;surface.data[i+2]=199;surface.data[i+3]=Math.round(bloom*255);}
+    }else{const limb=Math.pow(Math.max(0,(east*sx-north*sy)/r),1.1),bloom=Math.exp(-(((r-1)/.043)**2))*limb*.21;surface.data[i]=245;surface.data[i+1]=189;surface.data[i+2]=142;surface.data[i+3]=Math.round(bloom*255);}
   }
   lightCtx.putImageData(surface,0,0);maskCtx.putImageData(maskPixels,0,0);
   const revision=++maskRevision;mask.toBlob(blob=>{if(!blob||revision!==maskRevision)return;const next=URL.createObjectURL(blob),previous=maskUrl;maskUrl=next;$('[data-land-mask]').setAttribute('href',next);if(previous)URL.revokeObjectURL(previous);},'image/png');
