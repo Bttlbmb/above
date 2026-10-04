@@ -4,3 +4,6 @@ node_modules/
 qa/*.png
 # Local research working files are separate from the published application.
 research/
+
+# Generated responsive twilight screenshots and comparison board.
+qa/twilight/
