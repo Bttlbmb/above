@@ -4,11 +4,23 @@ A private, static, interactive demonstration of the cinematic Living Earth satel
 
 ## Scope and data
 
-This is a recorded design demo, not the live-location satellite app. The sky contains 1,127 active-catalog satellites above Seoul's geometric horizon at **2026-10-04 01:05:38 UTC** (10:05 KST), observer 37.5665° N, 126.978° E at sea level. Orbital coordinates remain at that snapshot while decorative shimmer animates and Earth lighting follows the current clock. Names and catalog numbers come from CelesTrak; altitude, speed, bearing and elevation are calculated using satellite.js 7.0.1. No new purpose, country, launch or brightness facts are asserted.
+This is a recorded design demo, not the live-location satellite app. The sky contains 1,127 active-catalog satellites above Seoul's geometric horizon at **2026-10-04 01:05:38 UTC** (10:05 KST), observer 37.5665° N, 126.978° E at sea level. Orbital coordinates remain at that snapshot while decorative shimmer animates and Earth lighting follows the current clock. Names and catalog numbers come from CelesTrak; altitude, speed, bearing and elevation are calculated using satellite.js 7.0.1. Mission stories use the reviewed official sources below. Country, launch and brightness facts are not inferred.
 
 CelesTrak's [active GP catalog](https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json), obtained on October 4, 2026, was propagated client-side using SGP4; records outside a 72-hour freshness window or with invalid propagation were excluded. The snapshot and minimal orbital inputs are embedded. The demo makes no fresh CelesTrak request. CelesTrak [GP documentation](https://celestrak.org/NORAD/documentation/gp-data-formats.php) and [usage policy](https://celestrak.org/usage-policy.php) govern source format and retrieval frequency.
 
 Satellite dots use user-relative azimuth/elevation. The faint Earth is geographical context, not the geographic positions of the satellite dots. Selected paths contain 121 SGP4 samples over ten minutes, retain invalid gaps, refine horizon crossings and clip below the horizon. Solid means reconstructed past; dashed and an arrow mean predicted future. Apparent slow motion stays at true scale.
+
+**Show me something cool** rotates through nine distinct objects in this snapshot. It starts with mission stories, then highlights nearby, fast-moving and unusual-orbit objects, preferring at least 10° elevation for calculated discoveries. It skips the currently selected object and avoids repeats until the set is exhausted, then starts a new cycle. Discovery history is saved locally alongside selection. Facts are one or two sentences; all dynamic values refer to the recorded sky. Orbital periods are approximate, calculated as 1,440 minutes divided by catalog mean motion (revolutions per day).
+
+Mission facts reviewed on October 4, 2026:
+
+| Object | Fact source |
+| --- | --- |
+| QZS-1R / Michibiki-1R (49336) | Japan Cabinet Office: [QZSS and its compatibility with GPS](https://qzss.go.jp/en/overview/services/sv02_why.html) |
+| Proba-3 OSC (62258) | ESA: [the Occulter blocks the Sun for its companion to study the corona](https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Proba-3_s_first_artificial_solar_eclipse) |
+| THEMIS A (30580) | NASA: [THEMIS investigates what triggers auroras](https://science.nasa.gov/mission/THEMIS/) |
+
+Other discovery facts use only the embedded CelesTrak orbital elements and calculated position/speed/range. No mission purpose is guessed from a name or orbit. Mission descriptions state the spacecraft's role, without asserting its present operating status.
 
 ## Earth lighting
 

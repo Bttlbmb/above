@@ -140,6 +140,36 @@
     let orbitalLibrary=null,pathFailure=false,raf=null,lastFrame=0;
     const svgNode=(name,attrs={})=>{const node=document.createElementNS(ns,name);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;};
     const number=n=>Math.round(n).toLocaleString('en-US'),bearing=angle=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(angle/22.5)%16];
+    const missionFacts=[
+      {id:49336,text:"QZS-1R belongs to Japan’s Michibiki navigation system, which works alongside GPS.",source:'https://qzss.go.jp/en/overview/services/sv02_why.html'},
+      {id:62258,text:"This is Proba-3’s Occulter spacecraft, designed to block the Sun for its partner and create an artificial eclipse. That lets the other spacecraft study the Sun’s faint outer atmosphere.",source:'https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Proba-3_s_first_artificial_solar_eclipse'},
+      {id:30580,text:"THEMIS A is part of NASA’s mission investigating what triggers the northern and southern lights.",source:'https://science.nasa.gov/mission/THEMIS/'}
+    ];
+    function buildDiscoveries(){
+      const facts=new Map(),high=objects.filter(o=>o.elevation>=10),relevant=high.length?high:objects.filter(o=>o.elevation>=0);
+      for(const fact of missionFacts){const object=byId.get(fact.id);if(!object||object.elevation<0)continue;
+        const context=fact.id===49336?` In this recorded sky, it is ${Math.round(object.elevation)}° up, almost directly overhead.`:fact.id===30580?` In this snapshot, it is about ${number(Math.round(object.range/100)*100)} km from Seoul.`:'';
+        facts.set(fact.id,{...fact,text:fact.text+context});
+      }
+      function add(score,explain,accept=()=>true){
+        const object=relevant.filter(o=>!facts.has(o.id)&&accept(o)&&Number.isFinite(score(o))).sort((a,b)=>score(b)-score(a)||b.elevation-a.elevation||a.id-b.id)[0];
+        if(object)facts.set(object.id,{id:object.id,text:explain(object),source:frame.source});
+      }
+      add(o=>-o.range,o=>`This satellite is only about ${number(o.range)} km from Seoul in this snapshot. Its calculated height above Earth is ${number(o.altitude)} km.`);
+      add(o=>o.speed,o=>`It is moving at ${o.speed.toFixed(2)} km/s in this snapshot—about ${number(Math.round(o.speed*3600/100)*100)} km/h.`);
+      add(o=>orbits[o.id]?.ECCENTRICITY,o=>`Its orbit is strongly stretched, with eccentricity ${orbits[o.id].ECCENTRICITY.toFixed(2)}; a circle has eccentricity zero. Its distance from Earth changes greatly through each orbit.`,o=>orbits[o.id]?.ECCENTRICITY>.5);
+      add(o=>-Math.abs(orbits[o.id]?.INCLINATION-90),o=>`Its orbit is tilted ${orbits[o.id].INCLINATION.toFixed(1)}° to Earth’s equator—almost perpendicular. In this snapshot, it is ${number(o.altitude)} km above Earth.`,o=>Math.abs(orbits[o.id]?.INCLINATION-90)<5);
+      add(o=>-Math.abs(orbits[o.id]?.MEAN_MOTION-1.0027379),o=>{const minutes=Math.round(1440/orbits[o.id].MEAN_MOTION);return `One orbit takes about ${Math.floor(minutes/60)} hours ${minutes%60} minutes, based on its orbital data—nearly a full day. Its calculated altitude here is ${number(o.altitude)} km.`;},o=>Math.abs(orbits[o.id]?.MEAN_MOTION-1.0027379)<.01);
+      add(o=>orbits[o.id]?.MEAN_MOTION,o=>`One circuit of Earth takes about ${Math.round(1440/orbits[o.id].MEAN_MOTION)} minutes, based on its orbital data. That is roughly ${Math.round(orbits[o.id].MEAN_MOTION)} orbits a day.`,o=>orbits[o.id]?.MEAN_MOTION>12);
+      return facts;
+    }
+    const discoveries=buildDiscoveries();
+    function discover(state){
+      const candidates=[...discoveries.values()].filter(fact=>fact.id!==state.selected);if(!candidates.length)return;
+      let fact=candidates.find(fact=>!state.discovered.includes(fact.id));
+      if(!fact){state.discovered=[];fact=candidates[0];}
+      state.discovered.push(fact.id);state.selected=fact.id;state.story=true;
+    }
     function calculateTrail(id){
       if(pathCache.has(id))return pathCache.get(id);
       const omm=orbits[String(id)],record=orbitalLibrary.json2satrec(omm),epoch=Date.parse(omm.EPOCH.endsWith('Z')?omm.EPOCH:omm.EPOCH+'Z');
@@ -240,14 +270,18 @@
       phone.querySelector('.am-idle').hidden=selected;const pause=phone.querySelector('.am-pause');pause.textContent=motionPreference.matches?'Motion reduced':state.paused?'Resume shimmer':'Pause shimmer';pause.disabled=motionPreference.matches;pause.setAttribute('aria-pressed',String(state.paused));
       if(object){
         phone.querySelector('[data-name]').textContent=object.name;phone.querySelector('[data-id]').textContent='Catalog '+object.id;phone.querySelector('[data-elevation]').textContent=Math.round(object.elevation)+'° up';phone.querySelector('[data-altitude]').textContent=number(object.altitude)+' km above Earth';phone.querySelector('[data-speed]').textContent=object.speed.toFixed(2)+' km/s';phone.querySelector('[data-bearing]').textContent=bearing(object.azimuth);
-        const label=phone.querySelector('.am-selected-label');label.textContent=object.name.split(' (')[0];const labelWidth=label.getBoundingClientRect().width,labelHeight=label.getBoundingClientRect().height,x=object.x*w/100,y=object.y*w/100;label.style.left=Math.max(3,Math.min(w-labelWidth-3,x+labelWidth+10>w?x-labelWidth-10:x+10))+'px';label.style.top=Math.max(3,Math.min(w-labelHeight-3,y-labelHeight/2))+'px';
+        const label=phone.querySelector('.am-selected-label');label.textContent=object.name.split(' (')[0];label.style.maxWidth='calc(100% - 6px)';
+        const labelWidth=label.getBoundingClientRect().width,labelHeight=label.getBoundingClientRect().height,x=object.x*w/100;
+        // Stay inside the sky immediately on resize, before its observer redraws.
+        const anchor=x+labelWidth+10>w?`calc(${object.x}% - ${labelWidth+10}px)`:`calc(${object.x}% + 10px)`,left=`clamp(3px, ${anchor}, calc(100% - ${labelWidth+3}px))`;
+        label.style.left=left;label.style.maxWidth=`calc(100% - ${left} - 3px)`;label.style.top=`clamp(3px, calc(${object.y}% - ${labelHeight/2}px), calc(100% - ${labelHeight+3}px))`;
         sky.setAttribute('aria-label',`${objects.length.toLocaleString('en-US')} satellites above the horizon. Selected ${object.name}, ${Math.round(object.elevation)} degrees up, bearing ${bearing(object.azimuth)}. Use arrow keys to explore.`);
       }
-      const story=phone.querySelector('[data-story]');story.hidden=!state.story;story.textContent=state.story&&object?`At ${Math.round(object.elevation)}° up, ${object.name.split(' (')[0]} is almost directly overhead. Its calculated altitude is about ${number(Math.round(object.altitude/100)*100)} km.`:'';
+      const story=phone.querySelector('[data-story]'),fact=state.story?discoveries.get(state.selected):null;story.hidden=!fact;story.textContent=fact?.text||'';
       drawEarth(model);updateSolar(model,true);drawTrail(model);drawDots(model,performance.now());
     }
-    function save(){window.openai?.setWidgetState?.({modelContent:null,privateContent:{aboveCinematic:models.map(m=>({selected:m.state.selected,paused:m.state.paused,story:m.state.story}))}})?.catch(()=>{});}
-    function restore(value){const saved=value?.privateContent?.aboveCinematic;for(const [index,model]of models.entries()){const s=saved?.[index];if(!s)continue;model.state.selected=byId.has(s.selected)?s.selected:null;model.state.paused=Boolean(s.paused);model.state.story=Boolean(s.story)&&s.selected===objects[0].id;}}
+    function save(){window.openai?.setWidgetState?.({modelContent:null,privateContent:{aboveCinematic:models.map(m=>({selected:m.state.selected,paused:m.state.paused,story:m.state.story,discovered:m.state.discovered}))}})?.catch(()=>{});}
+    function restore(value){const saved=value?.privateContent?.aboveCinematic;for(const [index,model]of models.entries()){const s=saved?.[index];if(!s)continue;model.state.selected=byId.has(s.selected)?s.selected:null;model.state.paused=Boolean(s.paused);model.state.story=Boolean(s.story)&&discoveries.has(model.state.selected);model.state.discovered=Array.isArray(s.discovered)?[...new Set(s.discovered.filter(id=>discoveries.has(id)))].slice(-discoveries.size):[];}}
     function visible(model){return !model.section.hidden&&!document.hidden&&model.intersects;}
     function needsAnimation(){return !motionPreference.matches&&models.some(m=>visible(m)&&!m.state.paused);}
     function schedule(){if(raf===null&&needsAnimation())raf=requestAnimationFrame(tick);}
@@ -263,12 +297,13 @@
       section.querySelector('.am-mount').append(document.getElementById('am-phone-template').content.cloneNode(true));
       const phone=section.querySelector('.am-phone'),sky=phone.querySelector('.am-sky'),canvas=phone.querySelector('.am-dots');
       phone.setAttribute('aria-label','Living Earth satellite sky');phone.querySelector('[data-help]').id=`am-help-${index}`;sky.setAttribute('aria-describedby',`am-help-${index}`);
-      const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector('.am-earth-light'),maskCanvas:document.createElement('canvas'),ctx:canvas.getContext('2d'),dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,state:{selected:null,story:false,paused:false,solarTime:Date.now()}};models.push(model);
+      const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector('.am-earth-light'),maskCanvas:document.createElement('canvas'),ctx:canvas.getContext('2d'),dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,state:{selected:null,story:false,discovered:[],paused:false,solarTime:Date.now()}};models.push(model);
       function select(id){model.state.selected=id;model.state.story=false;render(model);save();}
       function next(delta){const i=ordered.findIndex(o=>o.id===model.state.selected);select(ordered[(i+delta+ordered.length)%ordered.length].id);}
       sky.addEventListener('click',event=>{if(event.detail===0){next(1);return;}const rect=sky.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top,w=rect.width;let nearest=null,distance=22*22;for(const object of objects){const d=(object.x*w/100-x)**2+(object.y*w/100-y)**2;if(d<distance){nearest=object;distance=d;}}if(nearest)select(nearest.id);else if(model.state.selected){model.state.selected=null;model.state.story=false;render(model);save();}});
       sky.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].includes(event.key)){event.preventDefault();next(event.key==='ArrowLeft'||event.key==='ArrowUp'?-1:1);}if(event.key==='Escape'){model.state.selected=null;model.state.story=false;render(model);save();}});
-      phone.querySelector('.am-cool').addEventListener('click',()=>{model.state.selected=objects[0].id;model.state.story=true;render(model);save();});
+      phone.querySelector('.am-cool').disabled=discoveries.size<2;
+      phone.querySelector('.am-cool').addEventListener('click',()=>{discover(model.state);render(model);save();});
       phone.querySelector('.am-pause').addEventListener('click',()=>{model.state.paused=!model.state.paused;render(model);save();schedule();});
       new ResizeObserver(()=>{render(model);schedule();}).observe(sky);
       new IntersectionObserver(entries=>{model.intersects=entries[0].isIntersecting;if(model.intersects)updateSolar(model);schedule();},{threshold:0}).observe(phone);

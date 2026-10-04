@@ -75,6 +75,26 @@ try{
   const data=JSON.parse(await frame.locator('#am-frame').textContent()),star=data.objects.find(o=>o.id===57774),w=await sky.evaluate(e=>e.clientWidth);
   await sky.click({position:{x:star.x*w/100,y:star.y*w/100}});await frame.waitForSelector('.am-trail[data-selected="57774"]');
   assert.equal(await frame.locator('.am-trail').getAttribute('data-samples'),'121');await sky.press('Escape');
+  const discoveries=[];
+  for(let i=0;i<12;i++){
+    await phone.locator('.am-cool').click();
+    const id=Number(await frame.locator('.am-dots').getAttribute('data-selected')),story=await phone.locator('[data-story]').textContent();
+    assert.ok(data.objects.some(o=>o.id===id&&o.elevation>=0));assert.ok(story.length>30);assert.doesNotMatch(story,/NaN|undefined/);
+    if(i)assert.notEqual(id,discoveries[i-1].id);
+    await frame.waitForSelector(`.am-trail[data-selected="${id}"]`);assert.equal(await frame.locator('.am-trail').getAttribute('data-samples'),'121');
+    discoveries.push({id,story});
+  }
+  assert.equal(new Set(discoveries.slice(0,9).map(f=>f.id)).size,9);
+  assert.equal(new Set(discoveries.slice(0,9).map(f=>f.story)).size,9);
+  // Restore a non-first mission and partially explored cycle, ignoring stale IDs.
+  await frame.evaluate(()=>window.dispatchEvent(new CustomEvent('openai:set_globals',{detail:{globals:{widgetState:{privateContent:{aboveCinematic:[{selected:30580,story:true,paused:false,discovered:[49336,62258,30580,999999]}]}}}}})));
+  assert.ok((await phone.locator('[data-story]').textContent()).includes('NASA'));
+  await phone.locator('.am-cool').click();assert.ok(![49336,62258,30580].includes(Number(await frame.locator('.am-dots').getAttribute('data-selected'))));
+  await page.setViewportSize({width:320,height:1100});await page.clock.runFor(100);
+  assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,JSON.stringify(await frame.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,wide:[...document.querySelectorAll('*')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).slice(0,12).map(el=>({tag:el.tagName,class:el.className?.baseVal??el.className,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right}))}))));
+  await phone.screenshot({path:new URL('discovery-320.png',output).pathname});
+  await page.setViewportSize({width:390,height:1100});await page.clock.runFor(100);
+  report.push({discoveryClicks:12,distinctObjectsBeforeRepeat:9,distinctFactsBeforeRepeat:9,noAdjacentRepeats:true,restoredDiscoveryHistory:true,allDiscoveryPathsWork:true});
   await frame.evaluate(await readFile(process.env.AXE_PATH||'/private/tmp/above-axe/package/axe.min.js','utf8'));
   const violations=await frame.evaluate(async()=>{const r=await axe.run(document.getElementById('above-cinematic'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}));});assert.deepEqual(violations,[]);
   await page.emulateMedia({reducedMotion:'no-preference'});

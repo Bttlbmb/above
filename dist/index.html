@@ -1681,6 +1681,36 @@ html&gt;body{padding:0}&lt;/style&gt;
     let orbitalLibrary=null,pathFailure=false,raf=null,lastFrame=0;
     const svgNode=(name,attrs={})=&gt;{const node=document.createElementNS(ns,name);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;};
     const number=n=&gt;Math.round(n).toLocaleString(&#x27;en-US&#x27;),bearing=angle=&gt;[&#x27;N&#x27;,&#x27;NNE&#x27;,&#x27;NE&#x27;,&#x27;ENE&#x27;,&#x27;E&#x27;,&#x27;ESE&#x27;,&#x27;SE&#x27;,&#x27;SSE&#x27;,&#x27;S&#x27;,&#x27;SSW&#x27;,&#x27;SW&#x27;,&#x27;WSW&#x27;,&#x27;W&#x27;,&#x27;WNW&#x27;,&#x27;NW&#x27;,&#x27;NNW&#x27;][Math.round(angle/22.5)%16];
+    const missionFacts=[
+      {id:49336,text:&quot;QZS-1R belongs to Japan’s Michibiki navigation system, which works alongside GPS.&quot;,source:&#x27;https://qzss.go.jp/en/overview/services/sv02_why.html&#x27;},
+      {id:62258,text:&quot;This is Proba-3’s Occulter spacecraft, designed to block the Sun for its partner and create an artificial eclipse. That lets the other spacecraft study the Sun’s faint outer atmosphere.&quot;,source:&#x27;https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Proba-3_s_first_artificial_solar_eclipse&#x27;},
+      {id:30580,text:&quot;THEMIS A is part of NASA’s mission investigating what triggers the northern and southern lights.&quot;,source:&#x27;https://science.nasa.gov/mission/THEMIS/&#x27;}
+    ];
+    function buildDiscoveries(){
+      const facts=new Map(),high=objects.filter(o=&gt;o.elevation&gt;=10),relevant=high.length?high:objects.filter(o=&gt;o.elevation&gt;=0);
+      for(const fact of missionFacts){const object=byId.get(fact.id);if(!object||object.elevation&lt;0)continue;
+        const context=fact.id===49336?` In this recorded sky, it is ${Math.round(object.elevation)}° up, almost directly overhead.`:fact.id===30580?` In this snapshot, it is about ${number(Math.round(object.range/100)*100)} km from Seoul.`:&#x27;&#x27;;
+        facts.set(fact.id,{...fact,text:fact.text+context});
+      }
+      function add(score,explain,accept=()=&gt;true){
+        const object=relevant.filter(o=&gt;!facts.has(o.id)&amp;&amp;accept(o)&amp;&amp;Number.isFinite(score(o))).sort((a,b)=&gt;score(b)-score(a)||b.elevation-a.elevation||a.id-b.id)[0];
+        if(object)facts.set(object.id,{id:object.id,text:explain(object),source:frame.source});
+      }
+      add(o=&gt;-o.range,o=&gt;`This satellite is only about ${number(o.range)} km from Seoul in this snapshot. Its calculated height above Earth is ${number(o.altitude)} km.`);
+      add(o=&gt;o.speed,o=&gt;`It is moving at ${o.speed.toFixed(2)} km/s in this snapshot—about ${number(Math.round(o.speed*3600/100)*100)} km/h.`);
+      add(o=&gt;orbits[o.id]?.ECCENTRICITY,o=&gt;`Its orbit is strongly stretched, with eccentricity ${orbits[o.id].ECCENTRICITY.toFixed(2)}; a circle has eccentricity zero. Its distance from Earth changes greatly through each orbit.`,o=&gt;orbits[o.id]?.ECCENTRICITY&gt;.5);
+      add(o=&gt;-Math.abs(orbits[o.id]?.INCLINATION-90),o=&gt;`Its orbit is tilted ${orbits[o.id].INCLINATION.toFixed(1)}° to Earth’s equator—almost perpendicular. In this snapshot, it is ${number(o.altitude)} km above Earth.`,o=&gt;Math.abs(orbits[o.id]?.INCLINATION-90)&lt;5);
+      add(o=&gt;-Math.abs(orbits[o.id]?.MEAN_MOTION-1.0027379),o=&gt;{const minutes=Math.round(1440/orbits[o.id].MEAN_MOTION);return `One orbit takes about ${Math.floor(minutes/60)} hours ${minutes%60} minutes, based on its orbital data—nearly a full day. Its calculated altitude here is ${number(o.altitude)} km.`;},o=&gt;Math.abs(orbits[o.id]?.MEAN_MOTION-1.0027379)&lt;.01);
+      add(o=&gt;orbits[o.id]?.MEAN_MOTION,o=&gt;`One circuit of Earth takes about ${Math.round(1440/orbits[o.id].MEAN_MOTION)} minutes, based on its orbital data. That is roughly ${Math.round(orbits[o.id].MEAN_MOTION)} orbits a day.`,o=&gt;orbits[o.id]?.MEAN_MOTION&gt;12);
+      return facts;
+    }
+    const discoveries=buildDiscoveries();
+    function discover(state){
+      const candidates=[...discoveries.values()].filter(fact=&gt;fact.id!==state.selected);if(!candidates.length)return;
+      let fact=candidates.find(fact=&gt;!state.discovered.includes(fact.id));
+      if(!fact){state.discovered=[];fact=candidates[0];}
+      state.discovered.push(fact.id);state.selected=fact.id;state.story=true;
+    }
     function calculateTrail(id){
       if(pathCache.has(id))return pathCache.get(id);
       const omm=orbits[String(id)],record=orbitalLibrary.json2satrec(omm),epoch=Date.parse(omm.EPOCH.endsWith(&#x27;Z&#x27;)?omm.EPOCH:omm.EPOCH+&#x27;Z&#x27;);
@@ -1781,14 +1811,18 @@ html&gt;body{padding:0}&lt;/style&gt;
       phone.querySelector(&#x27;.am-idle&#x27;).hidden=selected;const pause=phone.querySelector(&#x27;.am-pause&#x27;);pause.textContent=motionPreference.matches?&#x27;Motion reduced&#x27;:state.paused?&#x27;Resume shimmer&#x27;:&#x27;Pause shimmer&#x27;;pause.disabled=motionPreference.matches;pause.setAttribute(&#x27;aria-pressed&#x27;,String(state.paused));
       if(object){
         phone.querySelector(&#x27;[data-name]&#x27;).textContent=object.name;phone.querySelector(&#x27;[data-id]&#x27;).textContent=&#x27;Catalog &#x27;+object.id;phone.querySelector(&#x27;[data-elevation]&#x27;).textContent=Math.round(object.elevation)+&#x27;° up&#x27;;phone.querySelector(&#x27;[data-altitude]&#x27;).textContent=number(object.altitude)+&#x27; km above Earth&#x27;;phone.querySelector(&#x27;[data-speed]&#x27;).textContent=object.speed.toFixed(2)+&#x27; km/s&#x27;;phone.querySelector(&#x27;[data-bearing]&#x27;).textContent=bearing(object.azimuth);
-        const label=phone.querySelector(&#x27;.am-selected-label&#x27;);label.textContent=object.name.split(&#x27; (&#x27;)[0];const labelWidth=label.getBoundingClientRect().width,labelHeight=label.getBoundingClientRect().height,x=object.x*w/100,y=object.y*w/100;label.style.left=Math.max(3,Math.min(w-labelWidth-3,x+labelWidth+10&gt;w?x-labelWidth-10:x+10))+&#x27;px&#x27;;label.style.top=Math.max(3,Math.min(w-labelHeight-3,y-labelHeight/2))+&#x27;px&#x27;;
+        const label=phone.querySelector(&#x27;.am-selected-label&#x27;);label.textContent=object.name.split(&#x27; (&#x27;)[0];label.style.maxWidth=&#x27;calc(100% - 6px)&#x27;;
+        const labelWidth=label.getBoundingClientRect().width,labelHeight=label.getBoundingClientRect().height,x=object.x*w/100;
+        // Stay inside the sky immediately on resize, before its observer redraws.
+        const anchor=x+labelWidth+10&gt;w?`calc(${object.x}% - ${labelWidth+10}px)`:`calc(${object.x}% + 10px)`,left=`clamp(3px, ${anchor}, calc(100% - ${labelWidth+3}px))`;
+        label.style.left=left;label.style.maxWidth=`calc(100% - ${left} - 3px)`;label.style.top=`clamp(3px, calc(${object.y}% - ${labelHeight/2}px), calc(100% - ${labelHeight+3}px))`;
         sky.setAttribute(&#x27;aria-label&#x27;,`${objects.length.toLocaleString(&#x27;en-US&#x27;)} satellites above the horizon. Selected ${object.name}, ${Math.round(object.elevation)} degrees up, bearing ${bearing(object.azimuth)}. Use arrow keys to explore.`);
       }
-      const story=phone.querySelector(&#x27;[data-story]&#x27;);story.hidden=!state.story;story.textContent=state.story&amp;&amp;object?`At ${Math.round(object.elevation)}° up, ${object.name.split(&#x27; (&#x27;)[0]} is almost directly overhead. Its calculated altitude is about ${number(Math.round(object.altitude/100)*100)} km.`:&#x27;&#x27;;
+      const story=phone.querySelector(&#x27;[data-story]&#x27;),fact=state.story?discoveries.get(state.selected):null;story.hidden=!fact;story.textContent=fact?.text||&#x27;&#x27;;
       drawEarth(model);updateSolar(model,true);drawTrail(model);drawDots(model,performance.now());
     }
-    function save(){window.openai?.setWidgetState?.({modelContent:null,privateContent:{aboveCinematic:models.map(m=&gt;({selected:m.state.selected,paused:m.state.paused,story:m.state.story}))}})?.catch(()=&gt;{});}
-    function restore(value){const saved=value?.privateContent?.aboveCinematic;for(const [index,model]of models.entries()){const s=saved?.[index];if(!s)continue;model.state.selected=byId.has(s.selected)?s.selected:null;model.state.paused=Boolean(s.paused);model.state.story=Boolean(s.story)&amp;&amp;s.selected===objects[0].id;}}
+    function save(){window.openai?.setWidgetState?.({modelContent:null,privateContent:{aboveCinematic:models.map(m=&gt;({selected:m.state.selected,paused:m.state.paused,story:m.state.story,discovered:m.state.discovered}))}})?.catch(()=&gt;{});}
+    function restore(value){const saved=value?.privateContent?.aboveCinematic;for(const [index,model]of models.entries()){const s=saved?.[index];if(!s)continue;model.state.selected=byId.has(s.selected)?s.selected:null;model.state.paused=Boolean(s.paused);model.state.story=Boolean(s.story)&amp;&amp;discoveries.has(model.state.selected);model.state.discovered=Array.isArray(s.discovered)?[...new Set(s.discovered.filter(id=&gt;discoveries.has(id)))].slice(-discoveries.size):[];}}
     function visible(model){return !model.section.hidden&amp;&amp;!document.hidden&amp;&amp;model.intersects;}
     function needsAnimation(){return !motionPreference.matches&amp;&amp;models.some(m=&gt;visible(m)&amp;&amp;!m.state.paused);}
     function schedule(){if(raf===null&amp;&amp;needsAnimation())raf=requestAnimationFrame(tick);}
@@ -1804,12 +1838,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       section.querySelector(&#x27;.am-mount&#x27;).append(document.getElementById(&#x27;am-phone-template&#x27;).content.cloneNode(true));
       const phone=section.querySelector(&#x27;.am-phone&#x27;),sky=phone.querySelector(&#x27;.am-sky&#x27;),canvas=phone.querySelector(&#x27;.am-dots&#x27;);
       phone.setAttribute(&#x27;aria-label&#x27;,&#x27;Living Earth satellite sky&#x27;);phone.querySelector(&#x27;[data-help]&#x27;).id=`am-help-${index}`;sky.setAttribute(&#x27;aria-describedby&#x27;,`am-help-${index}`);
-      const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector(&#x27;.am-earth-light&#x27;),maskCanvas:document.createElement(&#x27;canvas&#x27;),ctx:canvas.getContext(&#x27;2d&#x27;),dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,state:{selected:null,story:false,paused:false,solarTime:Date.now()}};models.push(model);
+      const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector(&#x27;.am-earth-light&#x27;),maskCanvas:document.createElement(&#x27;canvas&#x27;),ctx:canvas.getContext(&#x27;2d&#x27;),dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,state:{selected:null,story:false,discovered:[],paused:false,solarTime:Date.now()}};models.push(model);
       function select(id){model.state.selected=id;model.state.story=false;render(model);save();}
       function next(delta){const i=ordered.findIndex(o=&gt;o.id===model.state.selected);select(ordered[(i+delta+ordered.length)%ordered.length].id);}
       sky.addEventListener(&#x27;click&#x27;,event=&gt;{if(event.detail===0){next(1);return;}const rect=sky.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top,w=rect.width;let nearest=null,distance=22*22;for(const object of objects){const d=(object.x*w/100-x)**2+(object.y*w/100-y)**2;if(d&lt;distance){nearest=object;distance=d;}}if(nearest)select(nearest.id);else if(model.state.selected){model.state.selected=null;model.state.story=false;render(model);save();}});
       sky.addEventListener(&#x27;keydown&#x27;,event=&gt;{if([&#x27;ArrowLeft&#x27;,&#x27;ArrowUp&#x27;,&#x27;ArrowRight&#x27;,&#x27;ArrowDown&#x27;].includes(event.key)){event.preventDefault();next(event.key===&#x27;ArrowLeft&#x27;||event.key===&#x27;ArrowUp&#x27;?-1:1);}if(event.key===&#x27;Escape&#x27;){model.state.selected=null;model.state.story=false;render(model);save();}});
-      phone.querySelector(&#x27;.am-cool&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{model.state.selected=objects[0].id;model.state.story=true;render(model);save();});
+      phone.querySelector(&#x27;.am-cool&#x27;).disabled=discoveries.size&lt;2;
+      phone.querySelector(&#x27;.am-cool&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{discover(model.state);render(model);save();});
       phone.querySelector(&#x27;.am-pause&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{model.state.paused=!model.state.paused;render(model);save();schedule();});
       new ResizeObserver(()=&gt;{render(model);schedule();}).observe(sky);
       new IntersectionObserver(entries=&gt;{model.intersects=entries[0].isIntersecting;if(model.intersects)updateSolar(model);schedule();},{threshold:0}).observe(phone);

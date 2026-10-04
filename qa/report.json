@@ -8,7 +8,7 @@
     {
       "projectionAlignment": {
         "samples": 1667,
-        "maxCosineError": 2.4702462297909733e-15,
+        "maxCosineError": 2.55351295663786e-15,
         "dayPixels": 1377,
         "nightPixels": 80,
         "badPixels": 0
@@ -28,6 +28,14 @@
     },
     {
       "seoulDayRollover": true
+    },
+    {
+      "discoveryClicks": 12,
+      "distinctObjectsBeforeRepeat": 9,
+      "distinctFactsBeforeRepeat": 9,
+      "noAdjacentRepeats": true,
+      "restoredDiscoveryHistory": true,
+      "allDiscoveryPathsWork": true
     },
     {
       "pathSamples": 121,
