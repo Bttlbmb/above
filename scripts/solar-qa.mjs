@@ -1,9 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import vm from 'node:vm';
-
-const html=await readFile(new URL('../source/cinematic-living-earth.html',import.meta.url),'utf8');
-const solar=vm.runInNewContext(html.match(/<script id="am-solar-math">([\s\S]*?)<\/script>/)[1]+';aboveCinematicSolar;');
+import * as solar from '../source/solar.mjs';
 const rad=Math.PI/180;
 
 // Independent Meeus / NOAA apparent-Sun calculation. Reference:

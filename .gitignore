@@ -2,3 +2,5 @@
 .sites-runtime/
 node_modules/
 qa/*.png
+# Local research working files are separate from the published application.
+research/

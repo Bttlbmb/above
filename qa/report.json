@@ -1,8 +1,9 @@
 {
   "report": [
     {
+      "sameOriginAssetsOnly": true,
+      "initialOrbitRequests": 0,
       "currentClock": true,
-      "stalePreviewIgnored": true,
       "updatesWithReducedMotion": true
     },
     {
@@ -27,7 +28,7 @@
       "noOverflow": true
     },
     {
-      "seoulDayRollover": true
+      "clockDayRollover": true
     },
     {
       "discoveryClicks": 12,
@@ -35,13 +36,28 @@
       "distinctFactsBeforeRepeat": 9,
       "noAdjacentRepeats": true,
       "restoredDiscoveryHistory": true,
-      "allDiscoveryPathsWork": true
+      "pathSamples": 121,
+      "sgp4Alignment": true,
+      "oneLazyOrbitDownload": true
     },
     {
-      "pathSamples": 121,
       "axeViolations": 0,
+      "cspViolations": 0,
       "shimmerAndPauseWork": true,
       "lightingUpdatesWhilePaused": true
+    },
+    {
+      "legacyStateMigration": true,
+      "unrelatedStoragePreserved": true,
+      "staleSolarTimeIgnored": true
+    },
+    {
+      "snapshotRetry": true,
+      "pathRetry": true,
+      "factsSurvivePathFailure": true
+    },
+    {
+      "blockedStorageWorks": true
     }
   ],
   "errors": []
