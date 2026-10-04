@@ -4,7 +4,7 @@
   </section>
   <template id="am-phone-template">
     <div class="am-phone" aria-label="Above satellite sky">
-      <header class="am-header"><span class="am-brand"><i data-lucide="orbit" aria-hidden="true"></i>above</span><span class="am-location"><i data-lucide="map-pin" aria-hidden="true"></i>Seoul</span></header>
+      <header class="am-header"><span class="am-brand"><i data-lucide="orbit" aria-hidden="true"></i>above</span><div class="am-header-tools"><span class="am-location"><i data-lucide="map-pin" aria-hidden="true"></i>Seoul</span><button type="button" class="am-pause cursor-interaction" aria-label="Pause shimmer" title="Pause shimmer" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path data-motion-icon d="M7 5v10M13 5v10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></header>
       <div class="am-title"><h2>Your sky.</h2><span>Sky recorded · 10:05</span></div>
       <p class="am-count">1,127 satellites above the horizon</p>
       <button type="button" class="am-sky cursor-interaction" aria-label="Satellite sky. Tap a dot, or use arrow keys to select a satellite.">
@@ -16,11 +16,6 @@
         <span class="am-cardinal am-n" aria-hidden="true">N</span><span class="am-cardinal am-e" aria-hidden="true">E</span><span class="am-cardinal am-s" aria-hidden="true">S</span><span class="am-cardinal am-w" aria-hidden="true">W</span>
         <span class="am-selected-label" aria-hidden="true" hidden></span>
       </button>
-      <div class="am-caption"><span>Center is overhead</span><button type="button" class="am-pause cursor-interaction" aria-pressed="false">Pause shimmer</button></div>
-      <div class="am-solar-line"><span data-phase></span><span data-event></span></div>
-      <div class="am-path-key" hidden><span><b class="am-past-key" aria-hidden="true"></b>Past 5 min</span><span><b class="am-future-key" aria-hidden="true"></b>Next 5 min</span></div>
-      <p class="am-path-note" data-path-note hidden></p>
-      <div class="am-context"><i data-lucide="globe" aria-hidden="true"></i><span>Earth backdrop · dots show your sky</span></div>
       <p class="am-idle">Tap a satellite to follow its path.</p>
       <div class="am-detail" aria-live="polite" aria-atomic="true" hidden>
         <div class="am-detail-heading"><div class="am-name-wrap"><h3 data-name></h3><p data-id></p></div><span class="am-elevation" data-elevation></span></div>
@@ -29,7 +24,8 @@
       </div>
       <button type="button" class="am-cool cursor-interaction"><i data-lucide="sparkles" aria-hidden="true"></i>Show me something cool</button>
       <p class="am-study-note" data-study-note>Motion study · decorative shimmer</p>
-      <span class="am-hidden" data-help>North is up. The center is overhead and the ring is your horizon. Satellite positions are a recorded snapshot of Seoul on October 4, 2026. The globe is a contextual backdrop, not the ground positions of the satellites. Arrow keys select satellites by compass bearing. Decorative shimmer does not indicate naked-eye visibility.</span>
+      <span class="am-hidden" data-help>North is up. The center is overhead and the ring is your horizon. Satellite positions are a recorded snapshot of Seoul on October 4, 2026. The globe is a contextual backdrop, not the ground positions of the satellites. The solid path shows the past five minutes; the dashed arrow predicts the next five minutes. Arrow keys select satellites by compass bearing. Decorative shimmer does not indicate naked-eye visibility.</span>
+      <span class="am-hidden" data-path-status role="status"></span>
     </div>
   </template>
   <style>
@@ -40,6 +36,7 @@
     #above-cinematic .am-phone *{box-sizing:border-box}
     #above-cinematic [hidden]{display:none!important}
     #above-cinematic .am-header{height:76px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #above-cinematic .am-header-tools{display:flex;align-items:center;gap:4px}
     #above-cinematic .am-brand{display:flex;align-items:center;gap:8px;font-size:25px;font-weight:500;letter-spacing:-1.3px}
     #above-cinematic .am-brand svg{width:23px;height:23px;color:var(--am-accent)}
     #above-cinematic .am-location{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--am-muted)}
@@ -59,20 +56,12 @@
     #above-cinematic .am-cardinal{position:absolute;font-size:12px;color:var(--am-muted);line-height:1;transform:translate(-50%,-50%)}
     #above-cinematic .am-n{left:50%;top:3%}#above-cinematic .am-s{left:50%;top:97%}#above-cinematic .am-e{right:0;top:50%;transform:translateY(-50%)}#above-cinematic .am-w{left:0;top:50%;transform:translateY(-50%)}
     #above-cinematic .am-selected-label{position:absolute;white-space:nowrap;max-width:calc(100% - 6px);overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:1.5;padding:2px 4px;color:var(--am-accent);background:var(--am-bg);pointer-events:none}
-    #above-cinematic .am-caption{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:3px;font-size:11px;color:var(--am-muted)}
-    #above-cinematic .am-pause{font:inherit;color:var(--am-muted);background:transparent;border:0;padding:8px 0 8px 10px;min-height:44px;min-width:94px}
-    #above-cinematic .am-solar-line{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:30px;margin-top:2px;font-size:11px;color:var(--am-muted);font-variant-numeric:tabular-nums}
-    #above-cinematic [data-phase]{color:var(--am-accent)}
-    #above-cinematic .am-path-key{display:flex;justify-content:center;gap:22px;font-size:11px;color:var(--am-muted);margin-top:14px}
-    #above-cinematic .am-path-key>span{display:flex;align-items:center;gap:7px}
-    #above-cinematic .am-past-key,#above-cinematic .am-future-key{width:21px;height:0;border-top:1px solid var(--am-accent);opacity:.5}
-    #above-cinematic .am-future-key{border-top-style:dashed;opacity:.8}
-    #above-cinematic .am-path-note{font-size:11px;color:var(--am-muted);text-align:center;margin:5px 0 0}
+    #above-cinematic .am-pause{display:flex;align-items:center;justify-content:center;font:inherit;color:var(--am-muted);background:transparent;border:0;padding:0;width:44px;height:44px;flex-shrink:0;border-radius:50%}
+    #above-cinematic .am-pause svg{width:17px;height:17px}
+    #above-cinematic .am-pause:disabled{opacity:.5}
     #above-cinematic .am-trail-path{fill:none;stroke:var(--am-accent);stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
     #above-cinematic .am-trail-path[data-part=past]{stroke-opacity:.4}
     #above-cinematic .am-trail-path[data-part=future]{stroke-opacity:.75;stroke-dasharray:3 4}
-    #above-cinematic .am-context{display:flex;justify-content:center;align-items:center;gap:6px;font-size:11px;color:var(--am-muted);margin-top:12px}
-    #above-cinematic .am-context svg{width:13px;height:13px;flex-shrink:0}
     #above-cinematic .am-idle{font-size:13px;color:var(--am-muted);text-align:center;margin:27px 0 0}
     #above-cinematic .am-detail{margin-top:18px;padding-top:17px;border-top:1px solid var(--am-line)}
     #above-cinematic .am-detail-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -189,19 +178,18 @@
       const trail={samples,past:visible(samples.slice(0,61)),future:visible(samples.slice(60))};if(pathCache.size>=32)pathCache.delete(pathCache.keys().next().value);pathCache.set(id,trail);return trail;
     }
     function drawTrail(model){
-      const {phone,sky,state,index}=model,w=sky.clientWidth,svg=phone.querySelector('.am-trail'),note=phone.querySelector('[data-path-note]');svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${w} ${w}`);delete svg.dataset.selected;
+      const {phone,sky,state,index}=model,w=sky.clientWidth,svg=phone.querySelector('.am-trail'),status=phone.querySelector('[data-path-status]');svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${w} ${w}`);delete svg.dataset.selected;status.textContent='';
       if(!state.selected)return;
-      if(!orbitalLibrary||!hasMap){note.textContent=pathFailure||!hasMap?'Path unavailable right now.':'Calculating path…';return;}
+      if(!orbitalLibrary||!hasMap){status.textContent=pathFailure||!hasMap?'Path unavailable right now.':'Calculating path…';return;}
       try{
         const trail=calculateTrail(state.selected),now=trail.samples.find(p=>p?.seconds===0);if(!now)throw new Error('Unusable position');
         const defs=svgNode('defs'),clip=svgNode('clipPath',{id:`am-path-clip-${index}`});clip.append(svgNode('circle',{cx:w/2,cy:w/2,r:w*.407368}));defs.append(clip);
         const arrow=svgNode('marker',{id:`am-direction-${index}`,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:5,markerHeight:5,orient:'auto'});arrow.append(svgNode('path',{d:'M 1 1 L 9 5 L 1 9',fill:'none',stroke:'var(--am-accent)','stroke-width':1.5,'stroke-opacity':.75}));defs.append(arrow);svg.append(defs);
         const group=svgNode('g',{'clip-path':`url(#am-path-clip-${index})`}),line=d3.line().x(p=>p.x*w/100).y(p=>p.y*w/100);
         for(const [part,segments]of [['past',trail.past],['future',trail.future]])for(const segment of segments){if(segment.length<2)continue;const path=svgNode('path',{d:line(segment),class:'am-trail-path','data-part':part});if(part==='future')path.setAttribute('marker-end',`url(#am-direction-${index})`);group.append(path);}
-        svg.append(group);const valid=trail.samples.filter(p=>p&&p.elevation>=0),span=valid.length?Math.hypot(d3.max(valid,p=>p.x)-d3.min(valid,p=>p.x),d3.max(valid,p=>p.y)-d3.min(valid,p=>p.y))*w/100:0;
+        svg.append(group);
         svg.dataset.selected=state.selected;svg.dataset.samples=trail.samples.length;svg.dataset.zeroX=now.x;svg.dataset.zeroY=now.y;
-        note.textContent=span<6?'Very little apparent motion over 10 min':'Calculated past · predicted next';
-      }catch{note.textContent='Path unavailable for this satellite.';}
+      }catch{status.textContent='Path unavailable for this satellite.';}
     }
     function drawLight(model,sun){
       const size=256,canvas=model.lightCanvas,ctx=canvas.getContext('2d'),mask=model.maskCanvas,maskCtx=mask.getContext('2d');
@@ -234,7 +222,7 @@
       const {phone,sky,index}=model,w=sky.clientWidth,earth=phone.querySelector('.am-earth'),grid=phone.querySelector('.am-grid');if(!w)return;
       grid.setAttribute('viewBox',`0 0 ${w} ${w}`);grid.replaceChildren(svgNode('circle',{cx:w/2,cy:w/2,r:w*.407368,class:'am-horizon'}));
       model.canvas.width=Math.round(w*model.dpr);model.canvas.height=Math.round(w*model.dpr);model.ctx.setTransform(model.dpr,0,0,model.dpr,0,0);
-      if(!hasMap){phone.querySelector('.am-context span').textContent='Earth backdrop unavailable · dots show your sky';return;}
+      if(!hasMap)return;
       const projection=d3.geoOrthographic().rotate([-frame.observer.longitude,-frame.observer.latitude]).translate([w/2,w/2]).scale(w*.375).clipAngle(90),path=d3.geoPath(projection);
       model.projection=projection;model.geoPath=path;earth.setAttribute('viewBox',`0 0 ${w} ${w}`);
       earth.replaceChildren(svgNode('path',{d:path({type:'Sphere'}),class:'am-earth-edge'}),svgNode('path',{d:path(d3.geoGraticule().step([30,30])()),class:'am-graticule'}),svgNode('path',{d:path(land),class:'am-land'}));
@@ -250,9 +238,6 @@
       const events=eventsFor(time);
       const sun=aboveCinematicSolar.position(time,frame.observer.latitude,frame.observer.longitude),rising=aboveCinematicSolar.position(time+60000,frame.observer.latitude,frame.observer.longitude).elevation>sun.elevation;
       const phase=sun.elevation>=4?'Daylight':sun.elevation>=-.833333?(rising?'Sunrise':'Sunset'):sun.elevation>=-18?(rising?'Dawn':'Dusk'):'Night';
-      phone.querySelector('[data-phase]').textContent=`${phase} · ${formatTime(time)}`;
-      const kind=sun.elevation<0&&rising?'sunrise':'sunset',event=events[kind];
-      phone.querySelector('[data-event]').textContent=event===null?'No sunrise / sunset today':`${kind==='sunrise'?'Sunrise':'Sunset'} ≈ ${formatTime(event)}`;
       phone.querySelector('[data-study-note]').textContent='Earth now · recorded satellites';
       if(hasMap)drawLight(model,sun);
       phone.dataset.solarTime=time;phone.dataset.sunElevation=sun.elevation;phone.dataset.sunAzimuth=sun.azimuth;phone.dataset.phase=phase;phone.dataset.sunrise=events.sunrise;phone.dataset.sunset=events.sunset;
@@ -266,8 +251,8 @@
     }
     function render(model){
       const {phone,sky,state}=model,w=sky.clientWidth,object=byId.get(state.selected),selected=Boolean(object);
-      for(const selector of ['.am-detail','.am-path-key','[data-path-note]','.am-selected-label'])phone.querySelector(selector).hidden=!selected;
-      phone.querySelector('.am-idle').hidden=selected;const pause=phone.querySelector('.am-pause');pause.textContent=motionPreference.matches?'Motion reduced':state.paused?'Resume shimmer':'Pause shimmer';pause.disabled=motionPreference.matches;pause.setAttribute('aria-pressed',String(state.paused));
+      for(const selector of ['.am-detail','.am-selected-label'])phone.querySelector(selector).hidden=!selected;
+      phone.querySelector('.am-idle').hidden=selected;const pause=phone.querySelector('.am-pause'),label=motionPreference.matches?'Motion reduced':state.paused?'Resume shimmer':'Pause shimmer';pause.setAttribute('aria-label',label);pause.title=label;pause.disabled=motionPreference.matches;pause.setAttribute('aria-pressed',String(state.paused));pause.querySelector('[data-motion-icon]').setAttribute('d',state.paused||motionPreference.matches?'M7 4l9 6-9 6Z':'M7 5v10M13 5v10');
       if(object){
         phone.querySelector('[data-name]').textContent=object.name;phone.querySelector('[data-id]').textContent='Catalog '+object.id;phone.querySelector('[data-elevation]').textContent=Math.round(object.elevation)+'° up';phone.querySelector('[data-altitude]').textContent=number(object.altitude)+' km above Earth';phone.querySelector('[data-speed]').textContent=object.speed.toFixed(2)+' km/s';phone.querySelector('[data-bearing]').textContent=bearing(object.azimuth);
         const label=phone.querySelector('.am-selected-label');label.textContent=object.name.split(' (')[0];label.style.maxWidth='calc(100% - 6px)';
@@ -297,6 +282,7 @@
       section.querySelector('.am-mount').append(document.getElementById('am-phone-template').content.cloneNode(true));
       const phone=section.querySelector('.am-phone'),sky=phone.querySelector('.am-sky'),canvas=phone.querySelector('.am-dots');
       phone.setAttribute('aria-label','Living Earth satellite sky');phone.querySelector('[data-help]').id=`am-help-${index}`;sky.setAttribute('aria-describedby',`am-help-${index}`);
+      if(!hasMap)phone.querySelector('[data-help]').textContent+=' Earth backdrop is unavailable.';
       const model={index,section,phone,sky,canvas,lightCanvas:phone.querySelector('.am-earth-light'),maskCanvas:document.createElement('canvas'),ctx:canvas.getContext('2d'),dpr:Math.min(devicePixelRatio||1,3),intersects:true,lastSolarTime:null,state:{selected:null,story:false,discovered:[],paused:false,solarTime:Date.now()}};models.push(model);
       function select(id){model.state.selected=id;model.state.story=false;render(model);save();}
       function next(delta){const i=ordered.findIndex(o=>o.id===model.state.selected);select(ordered[(i+delta+ordered.length)%ordered.length].id);}

@@ -30,7 +30,7 @@ Earth lighting starts at the browser's current clock and refreshes each minute, 
 
 Published Natural Earth land geometry is projected with D3. A 256 × 256 lighting canvas uses the calculated Sun direction and globe surface normals. A smooth light-to-dark fade, artistic surface brightness and a narrow atmospheric glow add depth. A matching luminance mask brightens sunlit land. Brightness and bloom are aesthetic choices, not physical visibility predictions. The independently shimmering satellites do not imply naked-eye visibility.
 
-A pause control stops decorative shimmer, and reduced-motion preference disables it automatically. Hidden/offscreen pages do not redraw it; Earth shading updates with clock changes rather than every animation frame. Keyboard arrows select satellites by compass bearing and Escape clears selection. Selection and motion preferences are saved only on this browser.
+A small pause/play icon in the header stops decorative shimmer, and reduced-motion preference disables it automatically. The sky flows directly into the selected object’s details; projection captions, sun-time labels, path legends and explanatory backdrop notes are omitted from the visual interface. Screen-reader instructions retain the projection and path conventions, and a hidden status announces path failures. Hidden/offscreen pages do not redraw shimmer; Earth shading updates with clock changes rather than every animation frame. Keyboard arrows select satellites by compass bearing and Escape clears selection. Selection and motion preferences are saved only on this browser.
 
 ## Architecture, setup and hosting
 
