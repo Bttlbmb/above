@@ -1,4 +1,5 @@
 .DS_Store
 .sites-runtime/
+.openai/
 node_modules/
 qa/

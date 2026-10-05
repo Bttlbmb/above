@@ -27,6 +27,7 @@ Automated accessibility scans are useful evidence, but they do not replace keybo
 
 ## Checks
 
+- `node scripts/pages-qa.mjs` serves the built site exclusively under `/above/` to match GitHub Pages. It checks phone and desktop loading, all asset paths, lazy facts and orbit modules, three discoveries with 121-sample paths, and a reload with the saved selection. It starts and stops its own preview server and needs Playwright, but not axe-core.
 - `node scripts/browser-qa.mjs` checks 320/390/736 px layouts, an independent globe projection, minute and date rollover, 121-sample trails, fact selection and provenance, saved preferences and migration, denied storage, loading retries, automatic shimmer, reduced motion, same-origin requests, and automated accessibility. It includes an 80-click discovery session.
 - `node scripts/twilight-qa.mjs` checks 16 viewport and pixel-density combinations, four lighting phases, globe alignment, and selection. It compares the globe interior with `tests/fixtures/twilight-globe.png`, the retained approved reference.
 - `node scripts/performance-qa.mjs` records three fresh sessions: initial and selected asset sizes, drawing work and time, heap use, geometry changes, and saved preferences. It measures the current app; old wrapper comparisons have been removed.

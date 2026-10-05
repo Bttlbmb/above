@@ -18,8 +18,7 @@ const root = fileURLToPath(new URL('../', import.meta.url)),
   dist = path.join(root, 'dist');
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const json = async (name) => JSON.parse(await readFile(path.join(root, name), 'utf8'));
-const manifest = await json('.openai/hosting.json');
-assert.equal(manifest.static.directory, 'dist');
+assert.equal(await readFile(path.join(dist, '.nojekyll'), 'utf8'), '');
 const files = [];
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {

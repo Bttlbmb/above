@@ -156,6 +156,8 @@ const html = (await read('index.html'))
   .trim();
 assert.ok(!/__\w+__/.test(html + app));
 await writeFile(new URL('index.html', dist), html);
+// Keep static hosts from treating the generated files as a Jekyll site.
+await writeFile(new URL('.nojekyll', dist), '');
 await writeFile(
   new URL('third-party-notices.txt', dist),
   await readFile(new URL('THIRD_PARTY_NOTICES.md', root)),

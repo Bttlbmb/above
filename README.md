@@ -21,7 +21,23 @@ node scripts/build.mjs
 node scripts/serve.mjs
 ```
 
-Open `http://127.0.0.1:4174`. Set `PORT` to change the preview address. Edit `source/`, then rebuild `dist/`; generated filenames contain a content hash so changed assets receive a new address. The build removes obsolete generated assets and checks data consistency before writing them. `.openai/hosting.json` points to this directory and the existing static Site. Publish through the Sites source-and-archive workflow.
+Open `http://127.0.0.1:4174`. Set `PORT` to change the preview address. Edit `source/`, then rebuild `dist/`; generated filenames contain a content hash so changed assets receive a new address. The build removes obsolete generated assets and checks data consistency before writing them.
+
+## Publish on GitHub Pages
+
+The complete project and its Git history are backed up in [Bttlbmb/above](https://github.com/Bttlbmb/above). The site runs entirely from static files; it needs no OpenAI hosting, server, credentials, or dependency installation.
+
+After making the repository public:
+
+1. Open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**. There is no publishing branch or folder to select.
+2. Open **Actions → Deploy Above to GitHub Pages → Run workflow**, select `main`, and run it. If the initial push ran before Pages was enabled, rerun the workflow after changing the settings.
+3. Once deployment succeeds, open [bttlbmb.github.io/above/](https://bttlbmb.github.io/above/).
+
+The workflow in `.github/workflows/pages.yml` automatically builds, checks, and publishes `dist/` on every push to `main`. Source, evidence, tests, and documentation remain in the repository; only the built site is uploaded to Pages. Keep `main` as the default branch. No `gh-pages` branch or `/docs` copy is needed. No custom domain is configured.
+
+To update the site, edit `source/`, run the checks in [QA.md](QA.md), commit the source and regenerated `dist/`, then push to `main`. All asset addresses are relative, including lazy-loaded facts and orbital modules, so the build works beneath `/above/` and on a domain root. `dist/.nojekyll` also marks the output as plain static files for other hosts.
+
+GitHub's [custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) describes the Pages setting and deployment permissions.
 
 ## Data and evidence
 
