@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { chromium, browserOptions } from './qa-runtime.mjs';
 
-const root = await realpath(fileURLToPath(new URL('../dist/', import.meta.url)));
+const root = await realpath(fileURLToPath(new URL('../docs/', import.meta.url)));
 const types = {
   '.html': 'text/html',
   '.mjs': 'text/javascript',

@@ -15,10 +15,10 @@ import {
   ecfToLookAngles,
 } from '../source/vendor/satellite.js';
 const root = fileURLToPath(new URL('../', import.meta.url)),
-  dist = path.join(root, 'dist');
+  output = path.join(root, 'docs');
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const json = async (name) => JSON.parse(await readFile(path.join(root, name), 'utf8'));
-assert.equal(await readFile(path.join(dist, '.nojekyll'), 'utf8'), '');
+assert.equal(await readFile(path.join(output, '.nojekyll'), 'utf8'), '');
 const files = [];
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -27,7 +27,7 @@ async function walk(dir) {
     else files.push(file);
   }
 }
-await walk(dist);
+await walk(output);
 for (const file of files) {
   const body = await readFile(file),
     match = path.basename(file).match(/^[a-z]+\.([0-9a-f]{12})\.(?:mjs|css|json|webp)$/);
@@ -50,7 +50,7 @@ for (const file of files) {
   ];
   for (const reference of references) {
     const target = path.resolve(path.dirname(file), reference[1]);
-    assert.ok(target.startsWith(dist + path.sep));
+    assert.ok(target.startsWith(output + path.sep));
     await stat(target);
   }
 }
@@ -102,7 +102,7 @@ assert.equal(
 );
 assert.equal((await json('evidence/report.json')).factsSha256, digest(handoff));
 assert.equal(
-  await readFile(path.join(dist, 'third-party-notices.txt'), 'utf8'),
+  await readFile(path.join(output, 'third-party-notices.txt'), 'utf8'),
   await readFile(path.join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8'),
 );
 const bytes = (await Promise.all(files.map(async (file) => (await stat(file)).size))).reduce(

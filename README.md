@@ -21,7 +21,7 @@ node scripts/build.mjs
 node scripts/serve.mjs
 ```
 
-Open `http://127.0.0.1:4174`. Set `PORT` to change the preview address. Edit `source/`, then rebuild `dist/`; generated filenames contain a content hash so changed assets receive a new address. The build removes obsolete generated assets and checks data consistency before writing them.
+Open `http://127.0.0.1:4174`. Set `PORT` to change the preview address. Edit `source/`, then rebuild `docs/`; generated filenames contain a content hash so changed assets receive a new address. The build removes obsolete generated assets and checks data consistency before writing them.
 
 ## Publish on GitHub Pages
 
@@ -29,15 +29,15 @@ The complete project and its Git history are backed up in [Bttlbmb/above](https:
 
 After making the repository public:
 
-1. Open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**. There is no publishing branch or folder to select.
-2. Open **Actions → Deploy Above to GitHub Pages → Run workflow**, select `main`, and run it. If the initial push ran before Pages was enabled, rerun the workflow after changing the settings.
-3. Once deployment succeeds, open [bttlbmb.github.io/above/](https://bttlbmb.github.io/above/).
+1. Open **Settings → Pages** and set **Build and deployment → Source** to **Deploy from a branch**.
+2. Select branch **main** and folder **/docs**, then click **Save**.
+3. Once GitHub finishes publishing, open [bttlbmb.github.io/above/](https://bttlbmb.github.io/above/).
 
-The workflow in `.github/workflows/pages.yml` automatically builds, checks, and publishes `dist/` on every push to `main`. Source, evidence, tests, and documentation remain in the repository; only the built site is uploaded to Pages. Keep `main` as the default branch. No `gh-pages` branch or `/docs` copy is needed. No custom domain is configured.
+The finished static site is committed in `docs/`. GitHub Pages publishes that folder after each push to `main`; there is no custom Actions workflow to configure or run. Source, evidence, tests, and documentation remain in the repository as a backup. Keep `main` as the default branch. No `gh-pages` branch or custom domain is needed.
 
-To update the site, edit `source/`, run the checks in [QA.md](QA.md), commit the source and regenerated `dist/`, then push to `main`. All asset addresses are relative, including lazy-loaded facts and orbital modules, so the build works beneath `/above/` and on a domain root. `dist/.nojekyll` also marks the output as plain static files for other hosts.
+To update the site, edit `source/`, run `node scripts/build.mjs` and the checks in [QA.md](QA.md), commit the source and regenerated `docs/`, then push to `main`. All asset addresses are relative, including lazy-loaded facts and orbital modules, so the build works beneath `/above/` and on a domain root. `docs/.nojekyll` marks the output as plain static files, so GitHub serves it without Jekyll processing. The `docs/` folder can also be uploaded to another static host.
 
-GitHub's [custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) describes the Pages setting and deployment permissions.
+GitHub's [publishing source documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) describes the branch and folder settings.
 
 ## Data and evidence
 

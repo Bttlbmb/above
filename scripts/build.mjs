@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 const root = new URL('../', import.meta.url),
   source = new URL('source/', root),
-  dist = new URL('dist/', root);
+  output = new URL('docs/', root);
 const read = (name) => readFile(new URL(name, source), 'utf8'),
   hash = (value) => createHash('sha256').update(value).digest('hex').slice(0, 12);
 const [skyText, orbitText, globeText, factsText] = await Promise.all(
@@ -103,11 +103,11 @@ for (const [key, applicable, group, tier, score, text, references, story] of fac
 assert.ok(factIds.size >= 500);
 assert.equal(factIds.size, facts.counts.distinctSatellites);
 assert.equal(facts.facts.length, facts.counts.facts);
-await mkdir(new URL('assets/', dist), { recursive: true });
+await mkdir(new URL('assets/', output), { recursive: true });
 const assets = [];
 async function asset(name, extension, value) {
   const file = `${name}.${hash(value)}.${extension}`;
-  await writeFile(new URL(`assets/${file}`, dist), value);
+  await writeFile(new URL(`assets/${file}`, output), value);
   assets.push({
     file,
     bytes: Buffer.byteLength(value),
@@ -155,18 +155,18 @@ const html = (await read('index.html'))
   .replace(/>\s+</g, '><')
   .trim();
 assert.ok(!/__\w+__/.test(html + app));
-await writeFile(new URL('index.html', dist), html);
+await writeFile(new URL('index.html', output), html);
 // Keep static hosts from treating the generated files as a Jekyll site.
-await writeFile(new URL('.nojekyll', dist), '');
+await writeFile(new URL('.nojekyll', output), '');
 await writeFile(
-  new URL('third-party-notices.txt', dist),
+  new URL('third-party-notices.txt', output),
   await readFile(new URL('THIRD_PARTY_NOTICES.md', root)),
 );
 // Prune only generated, content-hashed assets from previous builds.
 const keep = new Set(assets.map((a) => a.file));
-for (const file of await readdir(new URL('assets/', dist)))
+for (const file of await readdir(new URL('assets/', output)))
   if (/^[a-z]+\.[0-9a-f]{12}\.(json|mjs|css|webp)$/.test(file) && !keep.has(file))
-    await unlink(new URL(`assets/${file}`, dist));
+    await unlink(new URL(`assets/${file}`, output));
 console.log(
   JSON.stringify(
     {

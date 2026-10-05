@@ -137,7 +137,7 @@ try {
     runs.push(result);
     await context.close();
   }
-  const html = await readFile(new URL('../dist/index.html', import.meta.url));
+  const html = await readFile(new URL('../docs/index.html', import.meta.url));
   const report = {
     name,
     htmlBytes: html.length,

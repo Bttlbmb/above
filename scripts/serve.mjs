@@ -1,10 +1,10 @@
-// Local preview only. Resolve real paths so neither traversal nor symlinks escape dist.
+// Local preview only. Resolve real paths so neither traversal nor symlinks escape docs.
 import http from 'node:http';
 import { readFile, realpath } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-const root = await realpath(fileURLToPath(new URL('../dist/', import.meta.url)));
+const root = await realpath(fileURLToPath(new URL('../docs/', import.meta.url)));
 const port = Number(process.env.PORT || '4174');
 const types = {
   '.html': 'text/html',
