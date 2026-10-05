@@ -405,9 +405,8 @@ h3 {
   color: var(--am-muted);
   margin-top: 13px;
 }
-.am-speed {
-  display: block;
-  margin-top: 3px;
+.am-facts > span {
+  white-space: nowrap;
 }
 .am-sources {
   margin: 8px 0 0;
