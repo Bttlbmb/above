@@ -75,7 +75,6 @@ try {
   assert.equal(await phone.getAttribute('data-phase'), 'Daylight');
   assert.ok(Number(await phone.getAttribute('data-sun-elevation')) > 45);
   assert.equal(await page.locator('[data-replay],[data-now],iframe').count(), 0);
-  assert.equal(await phone.locator('[data-study-note]').innerText(), 'Earth now · sky snapshot');
   assert.equal(await phone.locator('.am-location time').textContent(), '10:05');
   assert.equal(await phone.locator('.am-location time').getAttribute('datetime'), data.recordedAt);
   assert.equal(await phone.locator('.am-title,h2').count(), 0);

@@ -6,7 +6,7 @@ Every dot comes from that snapshot. Tap one for its name, altitude, speed, and a
 
 ## Two clocks, one view
 
-The satellite sky stays at the recorded moment. The Earth lighting follows the device's current clock and refreshes each minute. **Earth now · sky snapshot** names this distinction, and the time beside Seoul belongs to the snapshot.
+The satellite sky stays at the recorded moment. The Earth lighting follows the device's current clock and refreshes each minute. The time beside Seoul belongs to the snapshot.
 
 North is up, the center is overhead, and the ring marks the horizon. The globe provides geographic context. The dots show directions in Seoul's sky rather than locations on Earth's surface. The solid trail reconstructs the previous five minutes from the orbit model; the dashed arrow predicts the following five minutes from the same recorded inputs. Neither line is a telemetry record.
 
