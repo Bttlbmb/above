@@ -73,6 +73,8 @@ try {
     await page.locator('.am-cool').click();
     await page.waitForSelector('.am-trail[data-selected]');
     await page.reload();
+    await page.waitForFunction(() => document.querySelector('#am-city').value === 'London');
+    await page.locator('.am-location-submit').click();
     await page.waitForSelector('.am-dots[data-drawn="1013"]');
     await page.waitForSelector('.am-trail[data-selected]');
     const urls = requests.filter((address) => /^https?:/.test(address));

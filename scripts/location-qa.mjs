@@ -63,11 +63,21 @@ try {
   const zero = await page.locator('.am-trail').evaluate((el) => [Number(el.dataset.zeroX), Number(el.dataset.zeroY)]);
   assert.ok(Math.hypot(zero[0] - target.x, zero[1] - target.y) < 1e-8);
   await page.reload();
+  await page.waitForFunction(() => document.querySelector('#am-city').value === 'New York');
+  await page.waitForTimeout(1500);
+  assert.equal(await page.locator('.am-location-dialog').isVisible(), true);
+  await choose(page, 'New York');
   await page.waitForSelector(`.am-trail[data-selected="${target.id}"]`);
   assert.equal(await page.locator('.am-location-dialog').isVisible(), false);
   assert.equal(await page.locator('[data-location-name]').textContent(), 'New York');
   assert.equal(await page.locator('.am-location').evaluate((el) => el.matches(':focus-visible')), false);
   await axe(page);
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('#am-city').value === 'New York');
+  await choose(page, 'London');
+  assert.equal(await page.locator('.am-dots').getAttribute('data-drawn'), '1013');
+  await page.locator('.am-location').click();
+  await choose(page, 'New York');
   for (const [width, height] of [[320, 844], [390, 950], [1920, 1080], [4158, 2126]]) {
     await page.setViewportSize({ width, height });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
@@ -154,6 +164,8 @@ try {
     globalDataRetry: true, widths: [320, 390, 1920, 4158], accessibilityViolations: 0, errors };
   result.pointerAndReloadFocusRingAbsent = true;
   result.keyboardFocusVisible = true;
+  result.reloadChooserWaitsForConfirmation = true;
+  result.savedLocationCanBeChangedOnReload = true;
   await writeFile(new URL('report.json', out), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result));
 } finally { await browser.close(); }

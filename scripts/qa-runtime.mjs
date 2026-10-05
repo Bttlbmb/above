@@ -20,7 +20,7 @@ export function axePath() {
   return process.env.AXE_PATH || require.resolve('axe-core/axe.min.js');
 }
 
-// Existing reference checks explicitly choose their observer; first-visit behavior has its own checks.
+// Existing reference checks explicitly choose their observer; startup and reload behavior have their own checks.
 export async function chooseSeoul(page) {
   const dialog = page.locator('.am-location-dialog');
   if (await dialog.isVisible()) {

@@ -777,8 +777,24 @@ function openLocation() {
   locationRequest++;
   locationBusy(false);
   locationStatus('');
+  if (chosenLocation) fillLocation(chosenLocation);
   $('.am-location-cancel').hidden = !chosenLocation;
   if (!dialog.open) dialog.showModal();
+}
+function coordinateInputs() {
+  const custom = $('#am-city').value === 'custom';
+  $('.am-custom-location').hidden = !custom;
+  $('#am-latitude').required = $('#am-longitude').required = custom;
+  $('#am-latitude').disabled = $('#am-longitude').disabled = !custom;
+}
+function fillLocation(location) {
+  const city = cities[location.name];
+  $('#am-city').value = city && city[0] === location.latitude && city[1] === location.longitude
+    ? location.name : 'custom';
+  $('#am-place-name').value = location.name;
+  $('#am-latitude').value = location.latitude;
+  $('#am-longitude').value = location.longitude;
+  coordinateInputs();
 }
 function closeLocation() {
   dialog.close();
@@ -892,12 +908,7 @@ async function chooseLocation(location, request = ++locationRequest) {
   }
 }
 $('.am-location').addEventListener('click', openLocation);
-$('#am-city').addEventListener('change', () => {
-  const custom = $('#am-city').value === 'custom';
-  $('.am-custom-location').hidden = !custom;
-  $('#am-latitude').required = $('#am-longitude').required = custom;
-  $('#am-latitude').disabled = $('#am-longitude').disabled = !custom;
-});
+$('#am-city').addEventListener('change', coordinateInputs);
 $('.am-location-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const name = $('#am-city').value, city = cities[name];
@@ -1017,7 +1028,8 @@ async function start() {
       if (location && Number.isFinite(location.latitude) && Math.abs(location.latitude) <= 90 &&
           Number.isFinite(location.longitude) && Math.abs(location.longitude) <= 180 &&
           typeof location.name === 'string' && location.name.trim() && location.name.length <= 40)
-        await chooseLocation(location);
+        // Remember the choice without proceeding before the visitor confirms it.
+        fillLocation(location);
     }
   } catch { /* A first visit, invalid preferences, or unavailable storage opens the chooser. */ }
 }
