@@ -2,7 +2,7 @@
 
 Above explores the satellites above your chosen location. On each visit, choose **Use my location**, select a city, or enter coordinates. The satellite sky, globe, horizon count, and selected paths adjust to that observer. Click the location in the header to change it; your choice is remembered in this browser and prefilled on the next visit. The startup chooser stays open until you confirm a location.
 
-Every dot comes from the recorded active catalog, calculated at October 4, 2026, 01:05:38 UTC for your location. Tap one for its name, altitude, speed, and a reviewed fact. **Show me something cool** explores mission stories, while varying the objects and topics it selects. Arrow keys visit satellites in compass order; Escape clears the selection. Selection and recent discoveries are remembered in this browser.
+Every dot comes from the recorded active catalog, calculated at October 4, 2026, 01:05:38 UTC for your location. Tap one for its name, altitude, speed, and a reviewed fact. **Show me something cool** explores mission stories, while varying the objects and topics it selects. Arrow keys visit satellites in compass order; Escape clears the selection. Selection and recent discoveries are remembered in this browser. The discovery button stays at the bottom of the card as details change, on desktop and mobile. Shorter stories leave space above it; enlarged text can expand the card.
 
 ## Two clocks, one view
 

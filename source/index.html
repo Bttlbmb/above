@@ -79,19 +79,21 @@
               ><span class="am-cardinal am-w" aria-hidden="true">W</span>
               <span class="am-selected-label" aria-hidden="true" hidden></span>
             </button>
-            <p class="am-idle">Loading the sky…</p>
-            <div class="am-detail" aria-live="polite" aria-atomic="true" hidden>
-              <div class="am-detail-heading">
-                <div class="am-name-wrap">
-                  <h3 data-name></h3>
-                  <p data-id></p>
+            <div class="am-reading">
+              <p class="am-idle">Loading the sky…</p>
+              <div class="am-detail" aria-live="polite" aria-atomic="true" hidden>
+                <div class="am-detail-heading">
+                  <div class="am-name-wrap">
+                    <h3 data-name></h3>
+                    <p data-id></p>
+                  </div>
+                  <span class="am-elevation" data-elevation></span>
                 </div>
-                <span class="am-elevation" data-elevation></span>
+                <div class="am-facts">
+                  <span data-altitude></span><span data-speed></span><span data-bearing></span>
+                </div>
+                <p class="am-story" data-story hidden></p>
               </div>
-              <div class="am-facts">
-                <span data-altitude></span><span data-speed></span><span data-bearing></span>
-              </div>
-              <p class="am-story" data-story hidden></p>
             </div>
             <button type="button" class="am-cool" disabled>
               <svg

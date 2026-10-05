@@ -77,6 +77,19 @@ svg {
 .am-phone {
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+}
+.am-phone > .am-header,
+.am-phone > .am-sky,
+.am-phone > .am-cool {
+  flex-shrink: 0;
+}
+.am-reading {
+  /* Reserve room for reviewed stories; longer or enlarged text can still grow naturally. */
+  display: flow-root;
+  min-height: 17em;
+  flex: 1 0 auto;
 }
 .am-phone::before {
   content: '';
@@ -453,6 +466,14 @@ h3 {
   }
   .am-facts {
     gap: 5px 14px;
+  }
+  .am-reading {
+    min-height: 18em;
+  }
+}
+@media (max-width: 360px) {
+  .am-reading {
+    min-height: 22em;
   }
 }
 
