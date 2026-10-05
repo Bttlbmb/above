@@ -30,6 +30,7 @@ try {
   await page.goto(url);
   await page.waitForSelector('.am-dots[data-drawn]');
   assert.equal(await page.locator('.am-location-dialog').isVisible(), true);
+  assert.equal(await page.locator('.am-custom-location').isVisible(), false);
   assert.equal(await page.locator('.am-locate').evaluate((el) => el === document.activeElement), true);
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.am-location-dialog').isVisible(), true);
@@ -97,6 +98,7 @@ try {
   }
   await page.locator('.am-location').click();
   await page.locator('#am-city').selectOption('custom');
+  assert.equal(await page.locator('.am-custom-location').isVisible(), true);
   await page.locator('#am-place-name').fill('North Pole');
   await page.locator('#am-latitude').fill('91');
   await page.locator('#am-longitude').fill('180');
@@ -106,6 +108,23 @@ try {
   await page.locator('.am-location-submit').click();
   await page.waitForSelector('.am-location-dialog', { state: 'hidden' });
   assert.equal(await page.locator('[data-location-name]').textContent(), 'North Pole');
+  await page.locator('.am-location').click();
+  assert.equal(await page.locator('#am-city').inputValue(), 'saved');
+  assert.equal(await page.locator('.am-custom-location').isVisible(), false);
+  await page.locator('.am-location-cancel').click();
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('#am-city').value === 'saved');
+  assert.equal(await page.locator('.am-custom-location').isVisible(), false);
+  assert.equal(await page.locator('.am-location-dialog').isVisible(), true);
+  await page.locator('#am-city').selectOption('custom');
+  assert.equal(await page.locator('.am-custom-location').isVisible(), true);
+  assert.equal(await page.locator('#am-place-name').inputValue(), 'North Pole');
+  assert.equal(await page.locator('#am-latitude').inputValue(), '90');
+  await page.locator('#am-city').selectOption('saved');
+  assert.equal(await page.locator('.am-custom-location').isVisible(), false);
+  await page.locator('.am-location-submit').click();
+  await page.waitForSelector('.am-location-dialog', { state: 'hidden' });
+  assert.equal(await page.locator('.am-phone').getAttribute('data-latitude'), '90');
   await context.close();
   const allowed = await browser.newContext({ geolocation: { latitude: 51.5074, longitude: -0.1278 }, permissions: ['geolocation'] });
   const located = await allowed.newPage();
@@ -115,6 +134,15 @@ try {
   assert.equal(await located.locator('[data-location-name]').textContent(), 'Your location');
   assert.equal(await located.locator('.am-dots').getAttribute('data-drawn'), '1013');
   assert.equal(await located.locator('.am-location').evaluate((el) => el.matches(':focus-visible')), false);
+  await located.reload();
+  await located.waitForFunction(() => document.querySelector('#am-city').value === 'saved');
+  assert.equal(await located.locator('.am-custom-location').isVisible(), false);
+  assert.equal(await located.locator('.am-location-dialog').isVisible(), true);
+  await located.screenshot({ path: new URL('saved-device-location.png', out).pathname });
+  await located.locator('.am-location-submit').click();
+  await located.waitForSelector('.am-location-dialog', { state: 'hidden' });
+  assert.equal(await located.locator('.am-phone').getAttribute('data-latitude'), '51.5074');
+  assert.equal(await located.locator('[data-location-name]').textContent(), 'Your location');
   await allowed.close();
   const keyboardContext = await browser.newContext();
   const keyboard = await keyboardContext.newPage();
@@ -169,6 +197,8 @@ try {
   result.keyboardFocusVisible = true;
   result.reloadChooserWaitsForConfirmation = true;
   result.savedLocationCanBeChangedOnReload = true;
+  result.savedDeviceAndCustomLocationsKeepCoordinatesClosed = true;
+  result.coordinateFieldsRequireExplicitCustomChoice = true;
   await writeFile(new URL('report.json', out), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result));
 } finally { await browser.close(); }

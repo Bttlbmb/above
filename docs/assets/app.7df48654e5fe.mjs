@@ -36,7 +36,7 @@ const cities = {
   Sydney: [-33.8688, 151.2093, 'Australia/Sydney'],
   Tokyo: [35.6762, 139.6503, 'Asia/Tokyo'],
 };
-let snapshotObjects, snapshotDiscoveries, snapshotEarth, chosenLocation = null,
+let snapshotObjects, snapshotDiscoveries, snapshotEarth, chosenLocation = null, rememberedLocation = null,
   locationResources = null, locationAttempt = 0, locationRequest = 0, factData = null;
 let keyboardNavigation = false;
 document.addEventListener('keydown', () => { keyboardNavigation = true; }, true);
@@ -793,9 +793,7 @@ function locationStatus(message) {
 function locationBusy(busy) {
   for (const element of dialog.querySelectorAll('button:not(.am-location-cancel), input, select'))
     element.disabled = busy;
-  if (!busy && $('#am-city').value !== 'custom') {
-    $('#am-latitude').disabled = $('#am-longitude').disabled = true;
-  }
+  if (!busy) coordinateInputs();
   dialog.setAttribute('aria-busy', String(busy));
 }
 function openLocation() {
@@ -810,12 +808,16 @@ function coordinateInputs() {
   const custom = $('#am-city').value === 'custom';
   $('.am-custom-location').hidden = !custom;
   $('#am-latitude').required = $('#am-longitude').required = custom;
-  $('#am-latitude').disabled = $('#am-longitude').disabled = !custom;
+  $('#am-place-name').disabled = $('#am-latitude').disabled = $('#am-longitude').disabled = !custom;
 }
 function fillLocation(location) {
+  rememberedLocation = location;
   const city = cities[location.name];
-  $('#am-city').value = city && city[0] === location.latitude && city[1] === location.longitude
-    ? location.name : 'custom';
+  const knownCity = city && city[0] === location.latitude && city[1] === location.longitude;
+  const savedOption = $('#am-city option[value="saved"]');
+  savedOption.hidden = savedOption.disabled = Boolean(knownCity);
+  savedOption.textContent = `${location.name} (saved location)`;
+  $('#am-city').value = knownCity ? location.name : 'saved';
   $('#am-place-name').value = location.name;
   $('#am-latitude').value = location.latitude;
   $('#am-longitude').value = location.longitude;
@@ -934,7 +936,7 @@ $('#am-city').addEventListener('change', coordinateInputs);
 $('.am-location-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const name = $('#am-city').value, city = cities[name];
-  const location = city ? { name, latitude: city[0], longitude: city[1], timeZone: city[2] } : {
+  const location = name === 'saved' ? rememberedLocation : city ? { name, latitude: city[0], longitude: city[1], timeZone: city[2] } : {
     name: $('#am-place-name').value.trim() || 'My location',
     latitude: Number($('#am-latitude').value), longitude: Number($('#am-longitude').value),
   };
