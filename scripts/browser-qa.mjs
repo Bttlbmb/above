@@ -1,4 +1,4 @@
-import { chromium, browserOptions, axePath } from './qa-runtime.mjs';
+import { chromium, browserOptions, axePath, chooseSeoul } from './qa-runtime.mjs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { position as solarPosition } from '../source/solar.mjs';
@@ -36,7 +36,10 @@ const browser = await chromium.launch(browserOptions),
   report = [];
 const url = process.env.QA_URL || 'http://127.0.0.1:4174/',
   key = 'above:living-earth:v1';
-const ready = (page) => page.waitForSelector('.am-dots[data-drawn="1127"]');
+const ready = async (page) => {
+  await page.waitForSelector('.am-dots[data-drawn="1127"]');
+  await chooseSeoul(page);
+};
 try {
   const context = await browser.newContext({
     viewport: { width: 390, height: 1100 },
@@ -78,10 +81,10 @@ try {
   assert.equal(await phone.locator('.am-location time').textContent(), '10:05');
   assert.equal(await phone.locator('.am-location time').getAttribute('datetime'), data.recordedAt);
   assert.equal(await phone.locator('.am-title,h2').count(), 0);
-  assert.doesNotMatch(await phone.innerText(), /\brecorded\b|Your sky/i);
+  assert.match(await phone.innerText(), /Sky snapshot/);
   assert.match(
     (await phone.locator('[data-help]').textContent()).replace(/\s+/g, ' '),
-    /snapshot of Seoul at 10:05 KST on October 4, 2026/,
+    /calculated for Seoul at 2026-10-04T01:05:38.000Z/,
   );
   assert.equal(await phone.locator('a,[data-sources],.am-pause,[data-motion-icon]').count(), 0);
   await page.clock.fastForward(120000);
@@ -415,7 +418,9 @@ try {
     ++moduleAttempts === 1 ? r.abort('failed') : r.continue(),
   );
   await failed.goto(url);
-  await failed.getByRole('button', { name: 'Try again' }).click();
+  await failed.waitForSelector('.am-location-status:not([hidden])');
+  await failed.locator('#am-city').selectOption('Seoul');
+  await failed.locator('.am-location-submit').click();
   await ready(failed);
   await failed.locator('.am-cool').click();
   await failed.waitForFunction(() =>
@@ -465,7 +470,7 @@ try {
   await factRetry.waitForSelector('.am-cool:not(:disabled)');
   assert.equal(factAttempts, 1);
   assert.ok((await factRetry.locator('[data-story]').textContent()).length > 30);
-  assert.doesNotMatch(await factRetry.locator('.am-phone').innerText(), /\brecorded\b|Your sky/i);
+  assert.match(await factRetry.locator('.am-phone').innerText(), /Sky snapshot/);
   assert.equal(await factRetry.locator('.am-phone').getAttribute('data-fact-count'), null);
   const fallbackId = await factRetry.locator('.am-dots').getAttribute('data-selected');
   await factRetry.locator('.am-cool').click();

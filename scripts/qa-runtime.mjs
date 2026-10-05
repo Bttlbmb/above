@@ -19,3 +19,14 @@ export const browserOptions = {
 export function axePath() {
   return process.env.AXE_PATH || require.resolve('axe-core/axe.min.js');
 }
+
+// Existing reference checks explicitly choose their observer; first-visit behavior has its own checks.
+export async function chooseSeoul(page) {
+  const dialog = page.locator('.am-location-dialog');
+  if (await dialog.isVisible()) {
+    await page.locator('#am-city').selectOption('Seoul');
+    await page.locator('.am-location-submit').click();
+  }
+  await page.waitForSelector('.am-location-dialog', { state: 'hidden' });
+  await page.waitForSelector('.am-phone[data-latitude="37.5665"]');
+}

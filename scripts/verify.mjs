@@ -35,7 +35,7 @@ for (const file of files) {
   if (!/\.(?:mjs|html|css)$/.test(file)) continue;
   const text = body.toString('utf8');
   assert.ok(
-    !/__(?:EARTH|STYLE|APP|SKY|ORBITS|SATELLITE|SOLAR|FACTS|FACTS_MODULE|FACTS_REVISION|STARS)__/.test(
+    !/__(?:EARTH|STYLE|APP|SKY|ORBITS|SATELLITE|SOLAR|FACTS|FACTS_MODULE|FACTS_REVISION|STARS|WORLD|CATALOG|LAND|LOCATION_MODULE)__/.test(
       text,
     ),
     `Unresolved build placeholder: ${file}`,

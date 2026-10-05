@@ -1,4 +1,4 @@
-import { chromium, browserOptions } from './qa-runtime.mjs';
+import { chromium, browserOptions, chooseSeoul } from './qa-runtime.mjs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const root = new URL('../', import.meta.url),
@@ -18,6 +18,7 @@ const errors = [],
   reference = new URL('../tests/fixtures/twilight-globe.png', import.meta.url);
 const ready = async (page) => {
   await page.waitForSelector('.am-dots[data-drawn="1127"]');
+  await chooseSeoul(page);
   await page.waitForFunction(() =>
     document.querySelector('[data-land-mask]').getAttribute('href')?.startsWith('blob:'),
   );

@@ -28,7 +28,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: url('__STARS__') center top/1536px 1024px no-repeat;
+  background: url('__STARS__') center top/cover no-repeat;
   opacity: 0.4;
   mask-image: linear-gradient(#000 80%, transparent);
 }
@@ -128,6 +128,16 @@ svg {
   font-size: 13px;
   color: var(--am-muted);
   white-space: nowrap;
+  border: 0;
+  padding: 5px 0;
+  background: transparent;
+  font-family: inherit;
+  min-width: 0;
+}
+.am-location [data-location-name] {
+  max-width: 115px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .am-location svg {
   width: 15px;
@@ -142,6 +152,95 @@ svg {
   color: var(--am-muted);
   margin: 12px 0 0;
   text-align: center;
+}
+.am-snapshot {
+  margin: 5px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--am-muted);
+}
+.am-location-dialog {
+  width: min(390px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow: auto;
+  padding: 26px;
+  border: 1px solid #2a3b50;
+  border-radius: 24px;
+  background: #151f30;
+  color: #f5f1e9;
+  font: inherit;
+}
+.am-location-dialog::backdrop {
+  background: #070d18c9;
+  backdrop-filter: blur(5px);
+}
+.am-location-dialog h2 {
+  margin: 0;
+  font-size: 23px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+.am-location-dialog p {
+  color: #a9b4c4;
+  font-size: 13px;
+}
+.am-location-dialog button {
+  font: inherit;
+  min-height: 44px;
+}
+.am-locate, .am-location-submit {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  color: #142033;
+  background: #f5bd8e;
+  font-weight: 500 !important;
+}
+.am-location-submit {
+  margin-top: 18px;
+  border: 1px solid #69768b;
+  color: #f5f1e9;
+  background: transparent;
+}
+.am-location-dialog label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 13px;
+}
+.am-location-dialog select, .am-location-dialog input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid #69768b;
+  border-radius: 8px;
+  background: #0b1220;
+  color: #f5f1e9;
+  font: inherit;
+}
+.am-coordinates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.am-location-dialog .am-location-status {
+  margin: 14px 0 0;
+  color: #f5bd8e;
+}
+.am-location-cancel {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: #a9b4c4;
+}
+input:focus-visible, select:focus-visible {
+  outline: 2px solid #f5bd8e;
+  outline-offset: 3px;
+}
+@media (max-width: 360px) {
+  .am-location [data-location-name] { max-width: 76px; }
 }
 .am-sky {
   display: block;

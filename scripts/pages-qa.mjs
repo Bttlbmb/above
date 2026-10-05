@@ -4,7 +4,7 @@ import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import { chromium, browserOptions } from './qa-runtime.mjs';
+import { chromium, browserOptions, chooseSeoul } from './qa-runtime.mjs';
 
 const root = await realpath(fileURLToPath(new URL('../docs/', import.meta.url)));
 const types = {
@@ -52,6 +52,7 @@ try {
     page.on('request', (request) => requests.push(request.url()));
     await page.goto(url);
     await page.waitForSelector('.am-dots[data-drawn="1127"]');
+    await chooseSeoul(page);
     for (let i = 0; i < 3; i++) {
       await page.locator('.am-cool').click();
       await page.waitForSelector('.am-phone[data-fact-objects="1115"]');
@@ -62,13 +63,25 @@ try {
     }
     await page.reload();
     await page.waitForSelector('.am-dots[data-drawn="1127"]');
+    await chooseSeoul(page);
+    await page.waitForSelector('.am-trail[data-selected]');
+    await page.locator('.am-location').click();
+    await page.locator('#am-city').selectOption('London');
+    await page.locator('.am-location-submit').click();
+    await page.waitForSelector('.am-dots[data-drawn="1013"]');
+    await page.waitForSelector('.am-location-dialog', { state: 'hidden' });
+    await page.locator('.am-cool').click();
+    await page.waitForSelector('.am-trail[data-selected]');
+    await page.reload();
+    await page.waitForSelector('.am-dots[data-drawn="1013"]');
     await page.waitForSelector('.am-trail[data-selected]');
     const urls = requests.filter((address) => /^https?:/.test(address));
     assert.ok(urls.every((address) => address.startsWith(url)), 'Assets must stay under /above/');
-    for (const asset of ['sky', 'stars', 'style', 'app', 'solar', 'facts', 'orbits', 'satellite'])
+    for (const asset of ['sky', 'stars', 'style', 'app', 'solar', 'facts', 'orbits', 'satellite', 'location', 'world', 'land', 'geo'])
       assert.ok(urls.some((address) => address.includes(`/assets/${asset}.`)), asset);
     assert.deepEqual(errors, []);
-    report.push({ width, projectPath: true, discoveries: 3, selectedPaths: true, reload: true });
+    report.push({ width, projectPath: true, discoveries: 3, selectedPaths: true, reload: true,
+      locationChange: true, globalAssetsUnderPrefix: true });
     await context.close();
   }
   console.log(JSON.stringify({ verified: true, report }));

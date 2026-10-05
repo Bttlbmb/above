@@ -7,10 +7,13 @@ node scripts/build.mjs
 node scripts/solar-qa.mjs
 node scripts/facts-qa.mjs
 node scripts/verify.mjs
+node scripts/location-verify.mjs
 node scripts/import-facts.mjs --check
 ```
 
 The solar check compares 120 hourly samples with an independent Meeus/NOAA calculation and checks polar geometry. The fact check verifies source and review mappings, direct access to all 1,115 individual facts, discovery ranking, and 80 choices with bounded histories.
+
+The location check compares all six city horizon counts and counts above 10° with the preserved independent reference in `evidence/location-reference.json`, recovered from the original recorded research. It checks every original Seoul position, the full accepted catalog, polar observers, the date line, and invalid coordinates. It needs no browser or network.
 
 ## Browser tools
 
@@ -27,6 +30,7 @@ Automated accessibility scans are useful evidence, but they do not replace keybo
 
 ## Checks
 
+- `node scripts/location-qa.mjs` checks the first-visit location prompt, device location, declined permission and location errors, six city counts, discoveries above each horizon, paths for satellites outside the Seoul reference, remembered location and selection, coordinate validation, global-data retries, accessibility, and 320/390/1920/4158 px views. It needs Playwright and axe-core.
 - `node scripts/pages-qa.mjs` serves the built site exclusively under `/above/` to match GitHub Pages. It checks phone and desktop loading, all asset paths, lazy facts and orbit modules, three discoveries with 121-sample paths, and a reload with the saved selection. It starts and stops its own preview server and needs Playwright, but not axe-core.
 - `node scripts/browser-qa.mjs` checks 320/390/736 px layouts, an independent globe projection, minute and date rollover, 121-sample trails, fact selection and provenance, saved preferences and migration, denied storage, loading retries, automatic shimmer, reduced motion, same-origin requests, and automated accessibility. It includes an 80-click discovery session.
 - `node scripts/twilight-qa.mjs` checks 16 viewport and pixel-density combinations, four lighting phases, globe alignment, and selection. It compares the globe interior with `tests/fixtures/twilight-globe.png`, the retained approved reference.
@@ -34,3 +38,5 @@ Automated accessibility scans are useful evidence, but they do not replace keybo
 - `node scripts/capture-palette.mjs` captures current-clock phone and desktop views and checks colors, object count, paths, and overflow.
 
 Generated reports and screenshots stay in ignored `qa/`. Fixed lighting fixtures make visual comparisons repeatable. Timing and heap figures describe the test machine and browser; they are not promises about phones or hosted networks.
+
+The existing reference-layout and lighting checks explicitly choose Seoul through the same startup form. The project-path check also changes to London and reloads, verifying that all new location assets stay under `/above/`.

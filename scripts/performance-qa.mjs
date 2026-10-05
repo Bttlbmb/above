@@ -1,4 +1,4 @@
-import { chromium, browserOptions } from './qa-runtime.mjs';
+import { chromium, browserOptions, chooseSeoul } from './qa-runtime.mjs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { gzipSync, brotliCompressSync } from 'node:zlib';
 const name = 'current';
@@ -49,6 +49,7 @@ try {
     await page.goto(process.env.QA_URL || 'http://127.0.0.1:4174/');
     const target = page;
     await target.waitForSelector('.am-dots[data-drawn="1127"]');
+    await chooseSeoul(page);
     const firstSkyMs = Date.now() - started;
     await page.waitForTimeout(150);
     await target.evaluate(() => {

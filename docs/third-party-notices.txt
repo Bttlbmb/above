@@ -4,7 +4,7 @@ Natural Earth land geometry is public domain: https://www.naturalearthdata.com/a
 
 Orbital data: CelesTrak active GP catalog. Data retrieval/use policy: https://celestrak.org/usage-policy.php
 
-## D3 7.9.0
+## D3 7.9.0 (original preparation), d3-geo 3.1.1 and bundled d3-array (runtime)
 
 Copyright 2010-2023 Mike Bostock
 

@@ -1,4 +1,4 @@
-import { chromium, browserOptions } from './qa-runtime.mjs';
+import { chromium, browserOptions, chooseSeoul } from './qa-runtime.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const output = new URL('../qa/current/', import.meta.url);
@@ -18,6 +18,7 @@ try {
     });
     await page.goto(process.env.QA_URL || 'http://127.0.0.1:4174/');
     await page.waitForSelector('.am-dots[data-drawn="1127"]');
+    await chooseSeoul(page);
     await page.waitForFunction(() =>
       document.querySelector('[data-land-mask]').getAttribute('href')?.startsWith('blob:'),
     );

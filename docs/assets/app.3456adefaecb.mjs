@@ -19,6 +19,25 @@ const motion = matchMedia('(prefers-reduced-motion: reduce)'),
 const preferenceKey = 'above:living-earth:v1',
   pathCache = new Map(),
   colors = getComputedStyle(phone);
+const locationKey = 'above:observer:v1', dialog = $('.am-location-dialog');
+const cities = {
+  Berlin: [52.52, 13.405, 'Europe/Berlin'],
+  'Cape Town': [-33.9249, 18.4241, 'Africa/Johannesburg'],
+  Delhi: [28.6139, 77.209, 'Asia/Kolkata'],
+  Dubai: [25.2048, 55.2708, 'Asia/Dubai'],
+  London: [51.5074, -0.1278, 'Europe/London'],
+  'Los Angeles': [34.0522, -118.2437, 'America/Los_Angeles'],
+  'Mexico City': [19.4326, -99.1332, 'America/Mexico_City'],
+  'New York': [40.7128, -74.006, 'America/New_York'],
+  Paris: [48.8566, 2.3522, 'Europe/Paris'],
+  'São Paulo': [-23.5505, -46.6333, 'America/Sao_Paulo'],
+  Seoul: [37.5665, 126.978, 'Asia/Seoul'],
+  Singapore: [1.3521, 103.8198, 'Asia/Singapore'],
+  Sydney: [-33.8688, 151.2093, 'Australia/Sydney'],
+  Tokyo: [35.6762, 139.6503, 'Asia/Tokyo'],
+};
+let snapshotObjects, snapshotDiscoveries, snapshotEarth, chosenLocation = null,
+  locationResources = null, locationAttempt = 0, locationRequest = 0, factData = null;
 const dotColor = colors.getPropertyValue('--am-dot').trim(),
   accent = colors.getPropertyValue('--am-accent').trim();
 const factsRevision = '2024557ce0b4';
@@ -46,6 +65,7 @@ let factLibrary = null,
   factsAttempt = 0,
   interactionRevision = 0;
 let orbitLoad = null,
+  globalOrbitLoad = null,
   libraryLoad = null,
   libraryAttempt = 0,
   skyLoad = null,
@@ -309,6 +329,7 @@ async function loadFacts() {
     factsLoad = Promise.all([json('./assets/facts.2024557ce0b4.json'), import(moduleUrl)])
       .then(([data, tools]) => {
         factTools = tools;
+        factData = data;
         factLibrary = tools.createLibrary(data, objects);
         phone.dataset.factCount = factLibrary.facts.length;
         phone.dataset.factObjects = factLibrary.bySatellite.size;
@@ -340,7 +361,11 @@ function select(id, story = false) {
 }
 function discoverFallback() {
   const candidates = [...discoveries.values()].filter((fact) => fact.id !== state.selected);
-  if (!candidates.length) return;
+  if (!candidates.length) {
+    const object = objects.find((o) => o.id !== state.selected);
+    if (object) select(object.id);
+    return;
+  }
   let fact = candidates.find((f) => !state.discovered.includes(f.id));
   if (!fact) {
     state.discovered = [];
@@ -377,8 +402,8 @@ async function discover() {
   }
 }
 
-async function loadOrbits() {
-  if (orbitalLibrary && orbitRows) return;
+async function loadOrbits(id) {
+  if (orbitalLibrary && orbitRows?.records.has(id)) return;
   if (!libraryLoad) {
     const url = './satellite.65ebf6a76659.mjs' + (libraryAttempt ? `?retry=${libraryAttempt}` : '');
     libraryAttempt++;
@@ -409,7 +434,17 @@ async function loadOrbits() {
         orbitLoad = null;
         throw error;
       });
-  return orbitLoad;
+  await orbitLoad;
+  if (!orbitRows.records.has(id)) {
+    if (!globalOrbitLoad) globalOrbitLoad = json('./assets/catalog.8b1373dcc945.json').then((data) => {
+      const indexes = orbitRows.fields.map((field) => data.fields.indexOf(field));
+      if (indexes.some((i) => i < 0)) throw new Error('Invalid global orbit data');
+      const idIndex = data.fields.indexOf('NORAD_CAT_ID');
+      for (const row of data.records)
+        orbitRows.records.set(Number(row[idIndex]), indexes.map((i) => row[i]));
+    }).catch((error) => { globalOrbitLoad = null; throw error; });
+    await globalOrbitLoad;
+  }
 }
 // This bounded cache contains modelled paths at the fixed snapshot time, never telemetry.
 function calculateTrail(id) {
@@ -504,7 +539,7 @@ async function drawTrail() {
   if (!id) return;
   status.textContent = 'Calculating path…';
   try {
-    await loadOrbits();
+    await loadOrbits(id);
     if (id !== state.selected) return;
     const trail = calculateTrail(id),
       now = trail.samples.find((p) => p?.seconds === 0);
@@ -682,6 +717,13 @@ async function loadSky() {
       objects = frame.objects.map((row) =>
         Object.fromEntries(frame.fields.map((key, i) => [key, row[i]])),
       );
+      snapshotObjects = objects;
+      snapshotDiscoveries = frame.discoveries;
+      snapshotEarth = {
+        land: $('#am-land-shape').getAttribute('d'),
+        graticule: $('.am-graticule').getAttribute('d'),
+        sphere: $('.am-earth-edge').getAttribute('d'),
+      };
       byId = new Map(objects.map((o) => [o.id, o]));
       ordered = [...objects].sort((a, b) => a.azimuth - b.azimuth || a.id - b.id);
       discoveries = new Map(frame.discoveries.map((f) => [f.id, f]));
@@ -695,7 +737,6 @@ async function loadSky() {
       delete frame.objects;
       delete frame.fields;
       ready = true;
-      restore();
       $('[data-help]').id = 'am-help';
       sky.setAttribute('aria-describedby', 'am-help');
       $('.am-idle').textContent = 'Tap a satellite to explore.';
@@ -716,6 +757,178 @@ async function loadSky() {
   })();
   return skyLoad;
 }
+
+function locationStatus(message) {
+  $('.am-location-status').textContent = message;
+  $('.am-location-status').hidden = !message;
+}
+function locationBusy(busy) {
+  for (const element of dialog.querySelectorAll('button:not(.am-location-cancel), input, select'))
+    element.disabled = busy;
+  if (!busy && $('#am-city').value !== 'custom') {
+    $('#am-latitude').disabled = $('#am-longitude').disabled = true;
+  }
+  dialog.setAttribute('aria-busy', String(busy));
+}
+function openLocation() {
+  locationRequest++;
+  locationBusy(false);
+  locationStatus('');
+  $('.am-location-cancel').hidden = !chosenLocation;
+  if (!dialog.open) dialog.showModal();
+}
+async function loadLocationResources() {
+  if (!locationResources) {
+    const attempt = locationAttempt++;
+    locationResources = Promise.all([
+      import('./location.e8a0004895bc.mjs' + (attempt ? `?retry=${attempt}` : '')),
+      json('./assets/world.37dc5dbd0e1f.json'), json('./assets/land.c9a6b2b0c59c.json'),
+    ]).catch((error) => {
+      locationResources = null;
+      throw error;
+    });
+  }
+  return locationResources;
+}
+function locationLabel(location) {
+  const time = $('.am-location time'), date = new Date(baseTime);
+  let timeZone = location.timeZone;
+  try { new Intl.DateTimeFormat('en', { timeZone }).format(date); }
+  catch { timeZone = undefined; }
+  const clock = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit' }).format(date);
+  const timestamp = new Intl.DateTimeFormat('en-GB', {
+    timeZone, dateStyle: 'long', timeStyle: 'short',
+  }).format(date);
+  $('[data-location-name]').textContent = location.name;
+  $('.am-location').title = `${location.name} · ${location.latitude.toFixed(4)}°, ${location.longitude.toFixed(4)}° · Change location`;
+  time.textContent = clock;
+  time.dateTime = date.toISOString();
+  time.title = `Sky snapshot · ${timestamp}`;
+  time.setAttribute('aria-label', `Sky snapshot, ${timestamp}, for ${location.name}`);
+  $('.am-snapshot').textContent = 'Sky snapshot · ' + new Intl.DateTimeFormat('en-GB', {
+    timeZone, day: 'numeric', month: 'short', year: 'numeric',
+  }).format(date);
+  $('[data-help]').textContent = `North is up. The center is overhead and the ring is your horizon.
+    Satellite positions are calculated for ${location.name} at ${date.toISOString()} from the recorded catalog.
+    The globe is a contextual backdrop, not the ground positions of the satellites.
+    The solid path shows the past five minutes; the dashed arrow predicts the next five minutes.
+    Arrow keys select satellites by compass bearing. Decorative shimmer does not indicate naked-eye visibility.`;
+}
+async function applyLocation(location, request) {
+  if (!ready) throw new Error('Sky unavailable');
+  if (!location || !Number.isFinite(location.latitude) || Math.abs(location.latitude) > 90 ||
+      !Number.isFinite(location.longitude) || Math.abs(location.longitude) > 180 ||
+      typeof location.name !== 'string' || !location.name.trim() || location.name.length > 40)
+    throw new Error('Invalid location');
+  let nextObjects, earth;
+  if (location.latitude === cities.Seoul[0] && location.longitude === cities.Seoul[1]) {
+    nextObjects = snapshotObjects;
+    earth = snapshotEarth;
+  } else {
+    const [tools, world, land] = await loadLocationResources();
+    nextObjects = tools.skyForLocation(world, location);
+    earth = tools.earthForLocation(land, location);
+  }
+  if (request !== locationRequest) return;
+  interactionRevision++;
+  const firstLocation = !chosenLocation;
+  objects = nextObjects;
+  frame.observer = location;
+  chosenLocation = location;
+  observer = { latitude: location.latitude * rad, longitude: location.longitude * rad, height: 0 };
+  byId = new Map(objects.map((o) => [o.id, o]));
+  if (firstLocation) restore();
+  ordered = [...objects].sort((a, b) => a.azimuth - b.azimuth || a.id - b.id);
+  discoveries = new Map(snapshotDiscoveries.filter((f) => byId.has(f.id)).map((f) => [f.id, f]));
+  if (factData) {
+    factLibrary = factTools.createLibrary(factData, objects);
+    phone.dataset.factObjects = factLibrary.bySatellite.size;
+  }
+  Object.assign(state, validState(state));
+  if (!state.selected) state.story = false;
+  pathCache.clear();
+  $('#am-land-shape').setAttribute('d', earth.land || '');
+  $('.am-graticule').setAttribute('d', earth.graticule);
+  $('.am-earth-edge').setAttribute('d', earth.sphere);
+  phone.dataset.latitude = location.latitude;
+  phone.dataset.longitude = location.longitude;
+  $('.am-count').textContent = number(objects.length) + ' satellites above the horizon';
+  $('.am-idle').textContent = objects.length ? 'Tap a satellite to explore.' : 'No satellites above this horizon in the recorded catalog.';
+  $('.am-cool').disabled = objects.length < 2;
+  locationLabel(location);
+  width = 0;
+  lastSolarMinute = null;
+  sizeCanvas();
+  updateSolar();
+  render();
+  if (state.selected) loadFacts();
+  save();
+  try { localStorage.setItem(locationKey, JSON.stringify(location)); } catch { /* Optional preference. */ }
+  dialog.close();
+  $('.am-location').focus();
+}
+async function chooseLocation(location, request = ++locationRequest) {
+  locationBusy(true);
+  locationStatus('Calculating your sky…');
+  try {
+    if (!ready) await loadSky();
+    await applyLocation(location, request);
+  } catch {
+    if (request === locationRequest) {
+      if (!dialog.open) openLocation();
+      locationStatus('This sky could not load. Please try again or choose another location.');
+    }
+  } finally {
+    if (request === locationRequest) locationBusy(false);
+  }
+}
+$('.am-location').addEventListener('click', openLocation);
+$('#am-city').addEventListener('change', () => {
+  const custom = $('#am-city').value === 'custom';
+  $('.am-custom-location').hidden = !custom;
+  $('#am-latitude').required = $('#am-longitude').required = custom;
+  $('#am-latitude').disabled = $('#am-longitude').disabled = !custom;
+});
+$('.am-location-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const name = $('#am-city').value, city = cities[name];
+  const location = city ? { name, latitude: city[0], longitude: city[1], timeZone: city[2] } : {
+    name: $('#am-place-name').value.trim() || 'My location',
+    latitude: Number($('#am-latitude').value), longitude: Number($('#am-longitude').value),
+  };
+  chooseLocation(location);
+});
+$('.am-locate').addEventListener('click', async () => {
+  const request = ++locationRequest;
+  if (!navigator.geolocation || !window.isSecureContext) {
+    locationStatus('Device location is unavailable here. Choose a city or enter coordinates instead.');
+    return;
+  }
+  locationBusy(true);
+  locationStatus('Waiting for your location…');
+  try {
+    const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(
+      resolve, reject, { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
+    ));
+    if (request !== locationRequest) return;
+    await chooseLocation({ name: 'Your location', latitude: position.coords.latitude,
+      longitude: position.coords.longitude }, request);
+  } catch (error) {
+    if (request === locationRequest) locationStatus(error.code === 1
+      ? 'Location permission was declined. Choose a city or enter coordinates instead.'
+      : 'Your location could not be found. Choose a city or enter coordinates instead.');
+  } finally {
+    if (request === locationRequest) locationBusy(false);
+  }
+});
+function cancelLocation(event) {
+  if (!chosenLocation) { event?.preventDefault(); return; }
+  locationRequest++;
+  dialog.close();
+  locationBusy(false);
+}
+dialog.addEventListener('cancel', cancelLocation);
+$('.am-location-cancel').addEventListener('click', cancelLocation);
 sky.addEventListener('click', (event) => {
   if (!ready) return;
   if (event.detail === 0) {
@@ -777,4 +990,26 @@ motion.addEventListener('change', () => {
   if (ready) render();
 });
 setInterval(updateSolar, 15000);
-loadSky();
+async function start() {
+  openLocation();
+  // Location controls remain available after the recorded sky finishes loading.
+  locationBusy(true);
+  await loadSky();
+  locationBusy(false);
+  $('.am-locate').focus();
+  if (!ready) {
+    locationStatus('The sky could not load. Choose a location to try again.');
+    return;
+  }
+  try {
+    const saved = localStorage.getItem(locationKey);
+    if (saved && saved.length < 1024) {
+      const location = JSON.parse(saved);
+      if (location && Number.isFinite(location.latitude) && Math.abs(location.latitude) <= 90 &&
+          Number.isFinite(location.longitude) && Math.abs(location.longitude) <= 180 &&
+          typeof location.name === 'string' && location.name.trim() && location.name.length <= 40)
+        await chooseLocation(location);
+    }
+  } catch { /* A first visit, invalid preferences, or unavailable storage opens the chooser. */ }
+}
+start();
