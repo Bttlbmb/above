@@ -858,9 +858,9 @@ function locationLabel(location) {
   time.dateTime = date.toISOString();
   time.title = `Sky snapshot · ${timestamp}`;
   time.setAttribute('aria-label', `Sky snapshot, ${timestamp}, for ${location.name}`);
-  $('[data-help]').textContent = `North is up. The center is overhead and the ring is your horizon.
+  $('[data-help]').textContent = `The satellite sky has north at the top. The center is overhead and the ring is your horizon.
     Satellite positions are calculated for ${location.name} at ${date.toISOString()} from the recorded catalog.
-    The globe is a contextual backdrop, not the ground positions of the satellites.
+    The globe is a contextual backdrop, not the ground positions of the satellites. Earth lighting follows the current clock.
     The solid path shows the past five minutes; the dashed arrow predicts the next five minutes.
     Arrow keys select satellites by compass bearing. Decorative shimmer does not indicate naked-eye visibility.`;
 }
