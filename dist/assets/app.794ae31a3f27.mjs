@@ -1,4 +1,4 @@
-import { position as solarPosition } from '__SOLAR__';
+import { position as solarPosition } from './solar.bab656eafe2d.mjs';
 
 const $ = (selector) => document.querySelector(selector),
   phone = $('.am-phone'),
@@ -21,7 +21,7 @@ const preferenceKey = 'above:living-earth:v1',
   colors = getComputedStyle(phone);
 const dotColor = colors.getPropertyValue('--am-dot').trim(),
   accent = colors.getPropertyValue('--am-accent').trim();
-const factsRevision = '__FACTS_REVISION__';
+const factsRevision = '2024557ce0b4';
 const state = {
   selected: null,
   story: false,
@@ -305,8 +305,8 @@ async function loadFacts() {
   if (factLibrary) return true;
   if (!factsLoad) {
     const attempt = factsAttempt++,
-      moduleUrl = '__FACTS_MODULE__' + (attempt ? `?retry=${attempt}` : '');
-    factsLoad = Promise.all([json('__FACTS__'), import(moduleUrl)])
+      moduleUrl = './facts.0e4807146641.mjs' + (attempt ? `?retry=${attempt}` : '');
+    factsLoad = Promise.all([json('./assets/facts.2024557ce0b4.json'), import(moduleUrl)])
       .then(([data, tools]) => {
         factTools = tools;
         factLibrary = tools.createLibrary(data, objects);
@@ -380,7 +380,7 @@ async function discover() {
 async function loadOrbits() {
   if (orbitalLibrary && orbitRows) return;
   if (!libraryLoad) {
-    const url = '__SATELLITE__' + (libraryAttempt ? `?retry=${libraryAttempt}` : '');
+    const url = './satellite.65ebf6a76659.mjs' + (libraryAttempt ? `?retry=${libraryAttempt}` : '');
     libraryAttempt++;
     libraryLoad = import(url)
       .then((lib) => {
@@ -393,7 +393,7 @@ async function loadOrbits() {
       });
   }
   if (!orbitLoad)
-    orbitLoad = Promise.all([json('__ORBITS__'), libraryLoad])
+    orbitLoad = Promise.all([json('./assets/orbits.7365d90b0f26.json'), libraryLoad])
       .then(([data, lib]) => {
         if (!Array.isArray(data.fields) || !Array.isArray(data.records))
           throw new Error('Invalid orbital data');
@@ -676,7 +676,7 @@ async function loadSky() {
   $('.am-idle').textContent = 'Loading the sky…';
   skyLoad = (async () => {
     try {
-      frame = await json('__SKY__');
+      frame = await json('./assets/sky.ae9db260cc00.json');
       if (!Array.isArray(frame.objects) || !frame.objects.length)
         throw new Error('Invalid snapshot');
       objects = frame.objects.map((row) =>

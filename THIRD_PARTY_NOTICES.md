@@ -90,6 +90,6 @@ https://creativecommons.org/licenses/by/4.0/
 The app's concise catalog facts are edited from GCAT numeric fields and documented
 definitions, with estimated values and historical launch-mass wording preserved.
 This does not change the data's license. The source citations, exact catalog
-identities and independent-review annotations are retained in evidence/fact-review.json.
+identities and independent-review annotations are retained in evidence/fact-review.json.gz.
 Mission facts are original concise paraphrases with individual primary sources;
 the software license does not relicense those sources.
