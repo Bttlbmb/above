@@ -6,7 +6,7 @@ Every dot comes from the recorded active catalog, calculated at October 4, 2026,
 
 ## Two clocks, one view
 
-The satellite sky stays at the recorded moment. The Earth lighting follows the device's current clock and refreshes each minute for the selected observer. The time beside the location and the date beneath the count belong to the satellite snapshot. City choices use that city's time zone; device and custom locations use the browser's time zone. This is a location-aware recorded sky, not current satellite tracking.
+The satellite sky stays at the recorded moment. The Earth lighting follows the device's current clock and refreshes each minute for the selected observer. The time beside the location belongs to the satellite snapshot; its full date is available by hovering over the time and in its accessible label. City choices use that city's time zone; device and custom locations use the browser's time zone. This is a location-aware recorded sky, not current satellite tracking.
 
 North is up, the center is overhead, and the ring marks the horizon. The globe provides geographic context. The dots show directions in the chosen observer's sky rather than locations on Earth's surface. The solid trail reconstructs the previous five minutes from the orbit model; the dashed arrow predicts the following five minutes from the same recorded inputs. Neither line is a telemetry record.
 

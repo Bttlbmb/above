@@ -81,7 +81,7 @@ try {
   assert.equal(await phone.locator('.am-location time').textContent(), '10:05');
   assert.equal(await phone.locator('.am-location time').getAttribute('datetime'), data.recordedAt);
   assert.equal(await phone.locator('.am-title,h2').count(), 0);
-  assert.match(await phone.innerText(), /Sky snapshot/);
+  assert.match(await phone.locator('.am-location time').getAttribute('title'), /Sky snapshot/);
   assert.match(
     (await phone.locator('[data-help]').textContent()).replace(/\s+/g, ' '),
     /calculated for Seoul at 2026-10-04T01:05:38.000Z/,
@@ -470,7 +470,7 @@ try {
   await factRetry.waitForSelector('.am-cool:not(:disabled)');
   assert.equal(factAttempts, 1);
   assert.ok((await factRetry.locator('[data-story]').textContent()).length > 30);
-  assert.match(await factRetry.locator('.am-phone').innerText(), /Sky snapshot/);
+  assert.match(await factRetry.locator('.am-location time').getAttribute('title'), /Sky snapshot/);
   assert.equal(await factRetry.locator('.am-phone').getAttribute('data-fact-count'), null);
   const fallbackId = await factRetry.locator('.am-dots').getAttribute('data-selected');
   await factRetry.locator('.am-cool').click();

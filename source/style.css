@@ -166,12 +166,6 @@ svg {
   margin: 12px 0 0;
   text-align: center;
 }
-.am-snapshot {
-  margin: 5px 0 0;
-  text-align: center;
-  font-size: 11px;
-  color: var(--am-muted);
-}
 .am-location-dialog {
   width: min(390px, calc(100% - 32px));
   max-height: calc(100% - 32px);

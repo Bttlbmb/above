@@ -831,9 +831,6 @@ function locationLabel(location) {
   time.dateTime = date.toISOString();
   time.title = `Sky snapshot · ${timestamp}`;
   time.setAttribute('aria-label', `Sky snapshot, ${timestamp}, for ${location.name}`);
-  $('.am-snapshot').textContent = 'Sky snapshot · ' + new Intl.DateTimeFormat('en-GB', {
-    timeZone, day: 'numeric', month: 'short', year: 'numeric',
-  }).format(date);
   $('[data-help]').textContent = `North is up. The center is overhead and the ring is your horizon.
     Satellite positions are calculated for ${location.name} at ${date.toISOString()} from the recorded catalog.
     The globe is a contextual backdrop, not the ground positions of the satellites.
