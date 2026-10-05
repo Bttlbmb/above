@@ -46,7 +46,10 @@ try {
     await page.locator('.am-cool').click();
     await page.waitForSelector('.am-cool:not(:disabled)');
     const id = Number(await page.locator('.am-dots').getAttribute('data-selected'));
-    assert.ok(skyForLocation(world, place).some((o) => o.id === id), `${place.name}: selected ${id}`);
+    const selected = skyForLocation(world, place).find((o) => o.id === id);
+    assert.ok(selected, `${place.name}: selected ${id}`);
+    assert.equal(await page.locator('[data-range]').textContent(),
+      Math.round(selected.range).toLocaleString('en-US') + ' km from you');
     await page.waitForSelector(`.am-trail[data-selected="${id}"]`);
     assert.equal(await page.locator('.am-trail').getAttribute('data-samples'), '121');
     report.push({ city: place.name, count: place.aboveHorizon, discoveryAboveHorizon: true });

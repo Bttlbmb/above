@@ -84,15 +84,12 @@ for (const row of sky.objects) {
   maximumPositionError = Math.max(maximumPositionError, Math.hypot(x - object.x, y - object.y));
   assert.ok(Math.abs(eciToGeodetic(pv.position, gmst).height - object.altitude) < 0.00051);
   assert.ok(Math.abs(Math.hypot(...Object.values(pv.velocity)) - object.speed) < 0.00051);
+  assert.ok(Math.abs(look.rangeSat - object.range) < 0.00051);
 }
 assert.ok(maximumPositionError < 0.00001);
 const skyFile = files.find((file) => /sky\.[0-9a-f]{12}\.json$/.test(file)),
   builtSky = JSON.parse(await readFile(skyFile, 'utf8'));
-assert.deepEqual(builtSky, {
-  ...sky,
-  fields: sky.fields.slice(0, -1),
-  objects: sky.objects.map((row) => row.slice(0, -1)),
-});
+assert.deepEqual(builtSky, sky);
 const handoff = gunzipSync(await readFile(path.join(root, 'evidence/reviewed-facts.json.gz'))),
   review = JSON.parse(gunzipSync(await readFile(path.join(root, 'evidence/fact-review.json.gz'))));
 assert.equal(digest(handoff), review.inputSha256);

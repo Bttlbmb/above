@@ -11,7 +11,7 @@ const objects = new Map(sky.objects.map((row) => {
   return [object.id, object];
 }));
 // Include every individual fact and each mission story with its longest applicable name.
-const cases = library.facts.map((row) => ({ text: row[5], object: row[1].map((id) => objects.get(id))
+const cases = library.facts.map((row) => ({ text: row[5], sources: row[6].map((i) => library.sources[i]), object: row[1].map((id) => objects.get(id))
   .reduce((a, b) => a.name.length >= b.name.length ? a : b) }));
 const browser = await chromium.launch(browserOptions), report = [], errors = [];
 try {
@@ -42,13 +42,22 @@ try {
         button = document.querySelector('.am-cool'), reading = document.querySelector('.am-reading');
       const initialTop = button.getBoundingClientRect().top;
       let maxMove = 0, maxContentHeight = 0, minimumGap = Infinity;
-      for (const { text, object } of cases) {
+      for (const { text, sources, object } of cases) {
         document.querySelector('[data-name]').textContent = object.name;
         document.querySelector('[data-id]').textContent = 'Catalog ' + object.id;
         document.querySelector('[data-elevation]').textContent = Math.round(object.elevation) + '° up';
         document.querySelector('[data-altitude]').textContent = Math.round(object.altitude).toLocaleString('en-US') + ' km above Earth';
         document.querySelector('[data-speed]').textContent = object.speed.toFixed(2) + ' km/s';
-        document.querySelector('[data-bearing]').textContent = 'NNW';
+        document.querySelector('[data-range]').textContent = Math.round(object.range).toLocaleString('en-US') + ' km from you';
+        const refs = document.querySelector('[data-sources]');
+        refs.hidden = false;
+        refs.replaceChildren();
+        for (const source of sources) {
+          const a = document.createElement('a');
+          a.textContent = source.label;
+          a.href = source.url;
+          refs.append(document.createTextNode(refs.childNodes.length ? ' · ' : 'Source: '), a);
+        }
         story.hidden = false;
         story.textContent = text;
         const b = button.getBoundingClientRect(), d = detail.getBoundingClientRect(), r = reading.getBoundingClientRect();

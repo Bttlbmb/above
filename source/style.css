@@ -88,7 +88,7 @@ svg {
 .am-reading {
   /* Reserve room for reviewed stories; longer or enlarged text can still grow naturally. */
   display: flow-root;
-  min-height: 17em;
+  min-height: 21em;
   flex: 1 0 auto;
 }
 .am-phone::before {
@@ -401,12 +401,31 @@ h3 {
   color: var(--am-accent);
 }
 .am-facts {
-  display: flex;
-  gap: 5px 18px;
-  flex-wrap: wrap;
   font-size: 11px;
   color: var(--am-muted);
   margin-top: 13px;
+}
+.am-speed {
+  display: block;
+  margin-top: 3px;
+}
+.am-sources {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--am-muted);
+  overflow-wrap: anywhere;
+}
+.am-sources a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.am-sources a:hover {
+  color: var(--am-text);
+}
+.am-sources a:focus-visible {
+  outline: 2px solid var(--am-accent);
+  outline-offset: 3px;
 }
 .am-story {
   font-size: 13px;
@@ -458,16 +477,13 @@ h3 {
   .am-sky {
     margin-top: 21px;
   }
-  .am-facts {
-    gap: 5px 14px;
-  }
   .am-reading {
-    min-height: 18em;
+    min-height: 22em;
   }
 }
 @media (max-width: 360px) {
   .am-reading {
-    min-height: 22em;
+    min-height: 26em;
   }
 }
 

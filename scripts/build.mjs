@@ -139,12 +139,8 @@ async function asset(name, extension, value) {
   });
   return `./assets/${file}`;
 }
-// Preserve the full scientific source, but do not send the unused range column to browsers.
-const runtimeSky = {
-  ...sky,
-  fields: sky.fields.slice(0, -1),
-  objects: sky.objects.map((row) => row.slice(0, -1)),
-};
+// Include the observer's straight-line range alongside height above Earth.
+const runtimeSky = sky;
 const skyUrl = await asset('sky', 'json', JSON.stringify(runtimeSky)),
   orbitUrl = await asset('orbits', 'json', JSON.stringify(orbits));
 const worldUrl = await asset('world', 'json', JSON.stringify({ recordedAt: catalog.recordedAt,

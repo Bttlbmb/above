@@ -295,7 +295,7 @@ function render() {
     $('[data-elevation]').textContent = Math.round(object.elevation) + '° up';
     $('[data-altitude]').textContent = number(object.altitude) + ' km above Earth';
     $('[data-speed]').textContent = object.speed.toFixed(2) + ' km/s';
-    $('[data-bearing]').textContent = bearing(object.azimuth);
+    $('[data-range]').textContent = number(object.range) + ' km from you';
     $('.am-selected-label').textContent = object.name.split(' (')[0];
     labelPosition();
   }
@@ -318,10 +318,35 @@ function renderFact() {
       : (state.story ? factTools.bestFact : factTools.detailFact)(factLibrary, state.selected);
   }
   fact ||= discoveries.get(state.selected);
+  // Fallback stories were captured for Seoul. Keep their observer-dependent wording local.
+  let text = fact?.text || '';
+  const object = byId.get(state.selected);
+  if (fact?.source && object) {
+    if (object.id === 49336) text = text.split(' In this recorded sky')[0];
+    if (object.id === 30580) text = text.split(' In this snapshot')[0];
+    if (object.id === 67555) text = `This satellite is about ${number(object.range)} km from you in this snapshot. Its calculated height above Earth is ${number(object.altitude)} km.`;
+  }
   $('[data-story]').hidden = !fact;
-  $('[data-story]').textContent = (fact?.text || '').replace(/\brecorded sky\b/g, 'sky snapshot');
+  $('[data-story]').textContent = text.replace(/\brecorded sky\b/g, 'sky snapshot');
   $('[data-story]').dataset.key = fact?.key || 'recorded-' + state.selected;
   $('[data-story]').dataset.story = fact?.story ?? '';
+  const sources = fact?.sources || (fact?.source ? [{ url: fact.source }] : []);
+  const container = $('[data-sources]');
+  container.replaceChildren();
+  for (const source of sources) {
+    const url = new URL(source.url);
+    if (url.protocol !== 'https:') continue;
+    const link = document.createElement('a');
+    link.href = source.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = source.label || ({ 'celestrak.org': 'CelesTrak', 'qzss.go.jp': 'QZSS',
+      'www.esa.int': 'ESA', 'science.nasa.gov': 'NASA' }[url.hostname] || url.hostname);
+    link.title = source.title || link.textContent;
+    link.setAttribute('aria-label', `${link.textContent}: ${source.title || 'supporting source'} (opens in a new tab)`);
+    container.append(document.createTextNode(container.childNodes.length ? ' · ' : 'Source: '), link);
+  }
+  container.hidden = !container.childNodes.length;
 }
 // Optional data has its own retry lifecycle so the sky can survive a failed request.
 async function loadFacts() {
@@ -714,7 +739,7 @@ async function loadSky() {
   $('.am-idle').textContent = 'Loading the sky…';
   skyLoad = (async () => {
     try {
-      frame = await json('./assets/sky.ae9db260cc00.json');
+      frame = await json('./assets/sky.98d3686f045e.json');
       if (!Array.isArray(frame.objects) || !frame.objects.length)
         throw new Error('Invalid snapshot');
       objects = frame.objects.map((row) =>
@@ -807,7 +832,7 @@ async function loadLocationResources() {
   if (!locationResources) {
     const attempt = locationAttempt++;
     locationResources = Promise.all([
-      import('./location.e8a0004895bc.mjs' + (attempt ? `?retry=${attempt}` : '')),
+      import('./location.5fd3753e54ec.mjs' + (attempt ? `?retry=${attempt}` : '')),
       json('./assets/world.37dc5dbd0e1f.json'), json('./assets/land.c9a6b2b0c59c.json'),
     ]).catch((error) => {
       locationResources = null;

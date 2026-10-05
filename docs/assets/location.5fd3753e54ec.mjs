@@ -19,7 +19,7 @@ export function skyForLocation(world, location) {
     const elevation = look.elevation / rad, radius = (90 - elevation) / 95 * 43;
     return { id, name, azimuth: look.azimuth / rad, elevation,
       x: 50 + Math.sin(look.azimuth) * radius,
-      y: 50 - Math.cos(look.azimuth) * radius, altitude, speed };
+      y: 50 - Math.cos(look.azimuth) * radius, altitude, speed, range: look.rangeSat };
   }).filter(Boolean).sort((a, b) => b.elevation - a.elevation || a.id - b.id);
 }
 

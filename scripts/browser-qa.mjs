@@ -86,7 +86,7 @@ try {
     (await phone.locator('[data-help]').textContent()).replace(/\s+/g, ' '),
     /calculated for Seoul at 2026-10-04T01:05:38.000Z/,
   );
-  assert.equal(await phone.locator('a,[data-sources],.am-pause,[data-motion-icon]').count(), 0);
+  assert.equal(await phone.locator('a:visible,[data-sources]:visible,.am-pause,[data-motion-icon]').count(), 0);
   await page.clock.fastForward(120000);
   assert.ok(
     Math.abs(Number(await phone.getAttribute('data-solar-time')) - (noon + 120000)) < 16000,
@@ -234,6 +234,11 @@ try {
     const factKey = await phone.locator('[data-story]').getAttribute('data-key');
     const record = facts.facts.find((row) => row[0] === factKey);
     assert.ok(record && record[1].includes(id) && record[3] > 0);
+    assert.deepEqual(await phone.locator('[data-sources] a').evaluateAll((links) => links.map((a) => a.href)),
+      record[6].map((i) => facts.sources[i].url));
+    const object = data.objects.find((o) => o.id === id);
+    assert.equal(await phone.locator('[data-range]').textContent(), Math.round(object.range).toLocaleString('en-US') + ' km from you');
+    assert.equal(await phone.locator('[data-bearing]').count(), 0);
     discoveries.push({ id, story, storyId, factKey, tier: record[3] });
   }
   assert.equal(new Set(discoveries.map((f) => f.id)).size, 12);
@@ -284,7 +289,7 @@ try {
     verifiedSatellites: facts.counts.distinctSatellites,
     prioritizesExceptional: true,
     contextExcludedFromDiscovery: true,
-    visibleLinksRemoved: true,
+    factSourcesVisible: true,
     pauseControlRemoved: true,
     noAdjacentRepeats: true,
     restoredDiscoveryHistory: true,
@@ -469,6 +474,9 @@ try {
   await factRetry.locator('.am-cool').click();
   await factRetry.waitForSelector('.am-cool:not(:disabled)');
   assert.equal(factAttempts, 1);
+  const fallbackSourceId = Number(await factRetry.locator('.am-dots').getAttribute('data-selected'));
+  assert.equal(await factRetry.locator('[data-sources] a').getAttribute('href'),
+    packed.discoveries.find((f) => f.id === fallbackSourceId).source);
   assert.ok((await factRetry.locator('[data-story]').textContent()).length > 30);
   assert.match(await factRetry.locator('.am-location time').getAttribute('title'), /Sky snapshot/);
   assert.equal(await factRetry.locator('.am-phone').getAttribute('data-fact-count'), null);
@@ -539,7 +547,9 @@ try {
   assert.ok(
     contextRecord[6].some((i) => facts.sources[i].url.startsWith('https://planet4589.org/')),
   );
-  assert.equal(await contextPage.locator('a,[data-sources],.am-pause').count(), 0);
+  assert.deepEqual(await contextPage.locator('[data-sources] a').evaluateAll((links) => links.map((a) => a.href)),
+    contextRecord[6].map((i) => facts.sources[i].url));
+  assert.equal(await contextPage.locator('.am-pause').count(), 0);
   await contextPage.close();
   report.push({ contextFactOnTap: true, gcatProvenanceRetained: true });
   assert.deepEqual(errors, []);

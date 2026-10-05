@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import { geodeticToEcf } from '../source/vendor/satellite.js';
 import { skyForLocation, earthForLocation, validLocation } from '../source/location.mjs';
 
 const read = async (path) => JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8'));
@@ -16,13 +17,22 @@ for (const place of reference.places) {
   assert.equal(objects.length, place.aboveHorizon, place.name);
   assert.equal(objects.filter((o) => o.elevation >= 10).length, place.above10Degrees, place.name);
   assert.ok(objects.every((o) => o.elevation >= 0 && o.elevation <= 90 &&
-    [o.azimuth, o.x, o.y, o.altitude, o.speed].every(Number.isFinite)));
+    [o.azimuth, o.x, o.y, o.altitude, o.speed, o.range].every(Number.isFinite)));
+  const observer = geodeticToEcf({ latitude: place.latitude * Math.PI / 180,
+    longitude: place.longitude * Math.PI / 180, height: 0 });
+  const worldById = new Map(world.objects.map((row) => [row[0], row]));
+  for (const object of objects) {
+    const [, , x, y, z] = worldById.get(object.id);
+    assert.ok(Math.abs(object.range - Math.hypot(x - observer.x, y - observer.y, z - observer.z)) < 1e-8);
+    assert.ok(object.range > 0);
+  }
   if (place.name === 'Seoul') {
     const byId = new Map(objects.map((o) => [o.id, o]));
     for (const row of sky.objects) {
       const expected = Object.fromEntries(sky.fields.map((field, i) => [field, row[i]]));
       const actual = byId.get(expected.id);
       assert.ok(actual);
+      assert.ok(Math.abs(actual.range - expected.range) < 0.00051);
       assert.ok(Math.hypot(actual.x - expected.x, actual.y - expected.y) < 0.00001);
     }
   }
@@ -43,4 +53,4 @@ for (const bad of [null, {}, { name: 'Bad', latitude: 91, longitude: 0 },
   { name: 'Bad', latitude: 0, longitude: NaN }, { name: '', latitude: 0, longitude: 0 }])
   assert.equal(validLocation(bad), false);
 console.log(JSON.stringify({ verified: true, globalObjects: world.objects.length, report,
-  referencePositions: true, polesAndDateLine: true }));
+  referencePositions: true, straightLineDistances: true, polesAndDateLine: true }));
