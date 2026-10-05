@@ -38,6 +38,7 @@ try {
   for (const place of refs.places) {
     if (!(await page.locator('.am-location-dialog').isVisible())) await page.locator('.am-location').click();
     await choose(page, place.name);
+    assert.equal(await page.locator('.am-location').evaluate((el) => el.matches(':focus-visible')), false);
     assert.equal(Number(await page.locator('.am-dots').getAttribute('data-drawn')), place.aboveHorizon);
     assert.equal(await page.locator('[data-location-name]').textContent(), place.name);
     assert.equal(Number(await page.locator('.am-phone').getAttribute('data-latitude')), place.latitude);
@@ -65,6 +66,7 @@ try {
   await page.waitForSelector(`.am-trail[data-selected="${target.id}"]`);
   assert.equal(await page.locator('.am-location-dialog').isVisible(), false);
   assert.equal(await page.locator('[data-location-name]').textContent(), 'New York');
+  assert.equal(await page.locator('.am-location').evaluate((el) => el.matches(':focus-visible')), false);
   await axe(page);
   for (const [width, height] of [[320, 844], [390, 950], [1920, 1080], [4158, 2126]]) {
     await page.setViewportSize({ width, height });
@@ -99,7 +101,26 @@ try {
   await located.waitForSelector('.am-location-dialog', { state: 'hidden' });
   assert.equal(await located.locator('[data-location-name]').textContent(), 'Your location');
   assert.equal(await located.locator('.am-dots').getAttribute('data-drawn'), '1013');
+  assert.equal(await located.locator('.am-location').evaluate((el) => el.matches(':focus-visible')), false);
   await allowed.close();
+  const keyboardContext = await browser.newContext();
+  const keyboard = await keyboardContext.newPage();
+  await keyboard.goto(url);
+  await keyboard.waitForSelector('.am-dots[data-drawn]');
+  await keyboard.keyboard.press('Tab');
+  assert.equal(await keyboard.locator('#am-city').evaluate((el) => el === document.activeElement), true);
+  await keyboard.locator('#am-city').selectOption('Seoul');
+  await keyboard.keyboard.press('Tab');
+  await keyboard.keyboard.press('Enter');
+  await keyboard.waitForSelector('.am-location-dialog', { state: 'hidden' });
+  assert.equal(await keyboard.locator('.am-location').evaluate((el) =>
+    el === document.activeElement && el.matches(':focus-visible')), true);
+  await keyboard.keyboard.press('Enter');
+  await keyboard.waitForSelector('.am-location-dialog', { state: 'visible' });
+  await keyboard.keyboard.press('Escape');
+  assert.equal(await keyboard.locator('.am-location').evaluate((el) =>
+    el === document.activeElement && el.matches(':focus-visible')), true);
+  await keyboardContext.close();
   for (const code of [1, 2, 3]) {
     const denied = await browser.newContext({ viewport: { width: 320, height: 844 } });
     const fallback = await denied.newPage();
@@ -131,6 +152,8 @@ try {
   const result = { verified: true, report, startupChooser: true, geolocation: true,
     deniedAndTimeoutFallbacks: true, outsideReferenceTrail: true, rememberedLocationAndSelection: true,
     globalDataRetry: true, widths: [320, 390, 1920, 4158], accessibilityViolations: 0, errors };
+  result.pointerAndReloadFocusRingAbsent = true;
+  result.keyboardFocusVisible = true;
   await writeFile(new URL('report.json', out), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result));
 } finally { await browser.close(); }

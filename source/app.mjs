@@ -38,6 +38,9 @@ const cities = {
 };
 let snapshotObjects, snapshotDiscoveries, snapshotEarth, chosenLocation = null,
   locationResources = null, locationAttempt = 0, locationRequest = 0, factData = null;
+let keyboardNavigation = false;
+document.addEventListener('keydown', () => { keyboardNavigation = true; }, true);
+document.addEventListener('pointerdown', () => { keyboardNavigation = false; }, true);
 const dotColor = colors.getPropertyValue('--am-dot').trim(),
   accent = colors.getPropertyValue('--am-accent').trim();
 const factsRevision = '__FACTS_REVISION__';
@@ -777,6 +780,13 @@ function openLocation() {
   $('.am-location-cancel').hidden = !chosenLocation;
   if (!dialog.open) dialog.showModal();
 }
+function closeLocation() {
+  dialog.close();
+  const button = $('.am-location');
+  // Return keyboard users to the location control without leaving a ring after pointer use or reload.
+  if (keyboardNavigation) button.focus();
+  else if (document.activeElement === button) button.blur();
+}
 async function loadLocationResources() {
   if (!locationResources) {
     const attempt = locationAttempt++;
@@ -864,8 +874,7 @@ async function applyLocation(location, request) {
   if (state.selected) loadFacts();
   save();
   try { localStorage.setItem(locationKey, JSON.stringify(location)); } catch { /* Optional preference. */ }
-  dialog.close();
-  $('.am-location').focus();
+  closeLocation();
 }
 async function chooseLocation(location, request = ++locationRequest) {
   locationBusy(true);
@@ -924,7 +933,7 @@ $('.am-locate').addEventListener('click', async () => {
 function cancelLocation(event) {
   if (!chosenLocation) { event?.preventDefault(); return; }
   locationRequest++;
-  dialog.close();
+  closeLocation();
   locationBusy(false);
 }
 dialog.addEventListener('cancel', cancelLocation);
